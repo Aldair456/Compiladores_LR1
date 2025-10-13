@@ -30,16 +30,20 @@ def expandir_producciones_con_pipe(productions):
     expanded = []
     
     for production in productions:
-        if ' | ' in production:
-            # Dividir por el pipe
-            left, right_part = production.split(' -> ')
-            alternatives = right_part.split(' | ')
-            
-            for alt in alternatives:
-                expanded.append(f"{left.strip()} -> {alt.strip()}")
+        # Normalizar espacios alrededor de '->'
+        if '->' in production:
+            left, right_part = production.split('->', 1)
         else:
-            # Si no tiene pipe, mantener como está
-            expanded.append(production)
+            left, right_part = production.split(' -> ', 1)
+        left = left.strip()
+        right_part = right_part.strip()
+
+        # Separar alternativas por '|', sin depender de espacios
+        alternatives = [alt.strip() for alt in right_part.split('|')]
+
+        # Si no hay '|', alternatives tendrá un solo elemento
+        for alt in alternatives:
+            expanded.append(f"{left} -> {alt}")
     
     return expanded
 

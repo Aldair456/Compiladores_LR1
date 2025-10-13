@@ -32,16 +32,20 @@ def expandir_producciones_con_pipe(productions):
     expanded = []
     
     for production in productions:
-        if ' | ' in production:
-            # Dividir por el pipe
-            left, right_part = production.split(' -> ')
-            alternatives = right_part.split(' | ')
-            
-            for alt in alternatives:
-                expanded.append(f"{left.strip()} -> {alt.strip()}")
+        # Normalizar espacios alrededor de '->'
+        if '->' in production:
+            left, right_part = production.split('->', 1)
         else:
-            # Si no tiene pipe, mantener como está
-            expanded.append(production)
+            left, right_part = production.split(' -> ', 1)
+        left = left.strip()
+        right_part = right_part.strip()
+
+        # Separar alternativas por '|', sin depender de espacios
+        alternatives = [alt.strip() for alt in right_part.split('|')]
+
+        # Si no hay '|', alternatives tendrá un solo elemento
+        for alt in alternatives:
+            expanded.append(f"{left} -> {alt}")
     
     return expanded
 
@@ -107,18 +111,40 @@ def lambda_handler(event, context):
                         prod_part = item_str
                         lookahead = '$'
                     
-                    # Encontrar el punto (•) para determinar la posición
+                    # Encontrar el punto (•) para determinar la posición (por token)
                     if '•' in prod_part:
-                        dot_pos = prod_part.find('•')
+                        # Calcular posición del punto como índice de token
+                        try:
+                            left_tmp, right_tmp = prod_part.split('->', 1)
+                            right_tokens_with_dot = right_tmp.strip().split()
+                            dot_pos = right_tokens_with_dot.index('•')
+                        except Exception:
+                            dot_pos = 0
                         # Remover el punto para obtener la producción limpia
-                        production = prod_part.replace('•', '').strip()
+                        production_raw = prod_part.replace('•', '').strip()
+                        # Normalizar espacios en la producción (evitar "S ->  e")
+                        if '->' in production_raw:
+                            left_part, right_part = production_raw.split('->', 1)
+                            left_part = left_part.strip()
+                            right_symbols = right_part.strip().split()
+                            production = f"{left_part} -> {' '.join(right_symbols)}"
+                        else:
+                            production = ' '.join(production_raw.split())
                         
                         # Crear objeto LR1Item
                         item = LR1Item(production, dot_pos, lookahead)
                         conjunto.add(item)
                     else:
                         # Si no hay punto, asumir posición 0
-                        production = prod_part.strip()
+                        production_raw = prod_part.strip()
+                        # Normalizar espacios en la producción
+                        if '->' in production_raw:
+                            left_part, right_part = production_raw.split('->', 1)
+                            left_part = left_part.strip()
+                            right_symbols = right_part.strip().split()
+                            production = f"{left_part} -> {' '.join(right_symbols)}"
+                        else:
+                            production = ' '.join(production_raw.split())
                         item = LR1Item(production, 0, lookahead)
                         conjunto.add(item)
                         

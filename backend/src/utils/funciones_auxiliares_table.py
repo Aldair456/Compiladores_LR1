@@ -298,8 +298,19 @@ def generar_tabla_lr1(conjuntos, transiciones, productions, terminals, nontermin
     action_table = {}
     goto_table = {}
     
-    # Agregar producción inicial aumentada
-    augmented_productions = [f"S' -> {productions[0].split(' -> ')[0].strip()}"] + productions
+    # Determinar símbolo inicial real y agregar producción aumentada correctamente
+    start_symbol = None
+    for production in productions:
+        left = production.split(' -> ')[0].strip()
+        if left != "S'":
+            start_symbol = left
+            break
+    if not start_symbol:
+        start_symbol = productions[0].split(' -> ')[0].strip()
+
+    augmented_productions = productions[:]
+    if not any(p.startswith("S' -> ") for p in productions):
+        augmented_productions = [f"S' -> {start_symbol}"] + productions
     
     for i, conjunto in enumerate(conjuntos):
         action_table[i] = {}
@@ -308,7 +319,11 @@ def generar_tabla_lr1(conjuntos, transiciones, productions, terminals, nontermin
         for item in conjunto:
             if item.is_reduce_item():
                 # Acción de reducción
-                production_index = augmented_productions.index(item.production)
+                try:
+                    production_index = augmented_productions.index(item.production)
+                except ValueError:
+                    # Producción no encontrada: reportar claramente en la tabla de errores
+                    raise ValueError(f"Producción no encontrada en la gramática: '{item.production}'. Asegúrate de que closure_data y productions coincidan.")
                 if production_index == 0:
                     # Aceptar
                     action_table[i][item.lookahead] = 'acc'
