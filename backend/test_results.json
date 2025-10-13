@@ -1,0 +1,1380 @@
+[
+  {
+    "test_number": 1,
+    "test_name": "Prueba 1",
+    "grammar": {
+      "productions": [
+        "S -> a",
+        "S -> b"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.899725Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> a",
+          "S -> b"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "b": [
+          "b"
+        ],
+        "a": [
+          "a"
+        ],
+        "S": [
+          "b",
+          "a"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "S",
+          "first_set": [
+            "b",
+            "a"
+          ],
+          "first_string": "a, b"
+        },
+        {
+          "symbol": "a",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "b",
+          "first_set": [
+            "b"
+          ],
+          "first_string": "b"
+        }
+      ],
+      "summary": {
+        "total_symbols": 3,
+        "terminals": 2,
+        "nonterminals": 1
+      }
+    }
+  },
+  {
+    "test_number": 2,
+    "test_name": "Prueba 2",
+    "grammar": {
+      "productions": [
+        "S -> A B",
+        "A -> a",
+        "A -> ε",
+        "B -> b",
+        "B -> ε"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.899725Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> A B",
+          "A -> a",
+          "A -> ε",
+          "B -> b",
+          "B -> ε"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "ε": [
+          "ε"
+        ],
+        "a": [
+          "a"
+        ],
+        "b": [
+          "b"
+        ],
+        "A": [
+          "ε",
+          "a"
+        ],
+        "B": [
+          "b",
+          "ε"
+        ],
+        "S": [
+          "b",
+          "ε",
+          "a"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "A",
+          "first_set": [
+            "ε",
+            "a"
+          ],
+          "first_string": "a, ε"
+        },
+        {
+          "symbol": "B",
+          "first_set": [
+            "b",
+            "ε"
+          ],
+          "first_string": "b, ε"
+        },
+        {
+          "symbol": "S",
+          "first_set": [
+            "b",
+            "ε",
+            "a"
+          ],
+          "first_string": "a, b, ε"
+        },
+        {
+          "symbol": "a",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "b",
+          "first_set": [
+            "b"
+          ],
+          "first_string": "b"
+        },
+        {
+          "symbol": "ε",
+          "first_set": [
+            "ε"
+          ],
+          "first_string": "ε"
+        }
+      ],
+      "summary": {
+        "total_symbols": 6,
+        "terminals": 3,
+        "nonterminals": 3
+      }
+    }
+  },
+  {
+    "test_number": 3,
+    "test_name": "Prueba 3",
+    "grammar": {
+      "productions": [
+        "S -> A B C",
+        "A -> a",
+        "B -> b",
+        "C -> c"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.899725Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> A B C",
+          "A -> a",
+          "B -> b",
+          "C -> c"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "b": [
+          "b"
+        ],
+        "a": [
+          "a"
+        ],
+        "c": [
+          "c"
+        ],
+        "C": [
+          "c"
+        ],
+        "A": [
+          "a"
+        ],
+        "B": [
+          "b"
+        ],
+        "S": [
+          "a"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "A",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "B",
+          "first_set": [
+            "b"
+          ],
+          "first_string": "b"
+        },
+        {
+          "symbol": "C",
+          "first_set": [
+            "c"
+          ],
+          "first_string": "c"
+        },
+        {
+          "symbol": "S",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "a",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "b",
+          "first_set": [
+            "b"
+          ],
+          "first_string": "b"
+        },
+        {
+          "symbol": "c",
+          "first_set": [
+            "c"
+          ],
+          "first_string": "c"
+        }
+      ],
+      "summary": {
+        "total_symbols": 7,
+        "terminals": 3,
+        "nonterminals": 4
+      }
+    }
+  },
+  {
+    "test_number": 4,
+    "test_name": "Prueba 4",
+    "grammar": {
+      "productions": [
+        "E -> E + T",
+        "E -> T",
+        "T -> T * F",
+        "T -> F",
+        "F -> ( E )",
+        "F -> id"
+      ],
+      "start_symbol": "E"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.899725Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "E -> E + T",
+          "E -> T",
+          "T -> T * F",
+          "T -> F",
+          "F -> ( E )",
+          "F -> id"
+        ],
+        "start_symbol": "E"
+      },
+      "first_table": {
+        "(": [
+          "("
+        ],
+        ")": [
+          ")"
+        ],
+        "id": [
+          "id"
+        ],
+        "+": [
+          "+"
+        ],
+        "*": [
+          "*"
+        ],
+        "T": [
+          "(",
+          "id"
+        ],
+        "E": [
+          "(",
+          "id"
+        ],
+        "F": [
+          "(",
+          "id"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "(",
+          "first_set": [
+            "("
+          ],
+          "first_string": "("
+        },
+        {
+          "symbol": ")",
+          "first_set": [
+            ")"
+          ],
+          "first_string": ")"
+        },
+        {
+          "symbol": "*",
+          "first_set": [
+            "*"
+          ],
+          "first_string": "*"
+        },
+        {
+          "symbol": "+",
+          "first_set": [
+            "+"
+          ],
+          "first_string": "+"
+        },
+        {
+          "symbol": "E",
+          "first_set": [
+            "(",
+            "id"
+          ],
+          "first_string": "(, id"
+        },
+        {
+          "symbol": "F",
+          "first_set": [
+            "(",
+            "id"
+          ],
+          "first_string": "(, id"
+        },
+        {
+          "symbol": "T",
+          "first_set": [
+            "(",
+            "id"
+          ],
+          "first_string": "(, id"
+        },
+        {
+          "symbol": "id",
+          "first_set": [
+            "id"
+          ],
+          "first_string": "id"
+        }
+      ],
+      "summary": {
+        "total_symbols": 8,
+        "terminals": 5,
+        "nonterminals": 3
+      }
+    }
+  },
+  {
+    "test_number": 5,
+    "test_name": "Prueba 5",
+    "grammar": {
+      "productions": [
+        "S -> if E then S else S",
+        "S -> while E do S",
+        "S -> id = E",
+        "E -> id",
+        "E -> num",
+        "E -> E + E"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.913146Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> if E then S else S",
+          "S -> while E do S",
+          "S -> id = E",
+          "E -> id",
+          "E -> num",
+          "E -> E + E"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "num": [
+          "num"
+        ],
+        "if": [
+          "if"
+        ],
+        "then": [
+          "then"
+        ],
+        "id": [
+          "id"
+        ],
+        "else": [
+          "else"
+        ],
+        "while": [
+          "while"
+        ],
+        "+": [
+          "+"
+        ],
+        "do": [
+          "do"
+        ],
+        "E": [
+          "id",
+          "num"
+        ],
+        "S": [
+          "while",
+          "id",
+          "if"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "+",
+          "first_set": [
+            "+"
+          ],
+          "first_string": "+"
+        },
+        {
+          "symbol": "E",
+          "first_set": [
+            "id",
+            "num"
+          ],
+          "first_string": "id, num"
+        },
+        {
+          "symbol": "S",
+          "first_set": [
+            "while",
+            "id",
+            "if"
+          ],
+          "first_string": "id, if, while"
+        },
+        {
+          "symbol": "do",
+          "first_set": [
+            "do"
+          ],
+          "first_string": "do"
+        },
+        {
+          "symbol": "else",
+          "first_set": [
+            "else"
+          ],
+          "first_string": "else"
+        },
+        {
+          "symbol": "id",
+          "first_set": [
+            "id"
+          ],
+          "first_string": "id"
+        },
+        {
+          "symbol": "if",
+          "first_set": [
+            "if"
+          ],
+          "first_string": "if"
+        },
+        {
+          "symbol": "num",
+          "first_set": [
+            "num"
+          ],
+          "first_string": "num"
+        },
+        {
+          "symbol": "then",
+          "first_set": [
+            "then"
+          ],
+          "first_string": "then"
+        },
+        {
+          "symbol": "while",
+          "first_set": [
+            "while"
+          ],
+          "first_string": "while"
+        }
+      ],
+      "summary": {
+        "total_symbols": 10,
+        "terminals": 8,
+        "nonterminals": 2
+      }
+    }
+  },
+  {
+    "test_number": 6,
+    "test_name": "Prueba 6",
+    "grammar": {
+      "productions": [
+        "S -> A",
+        "A -> a",
+        "A -> b",
+        "A -> c",
+        "A -> d",
+        "A -> e"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.917155Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> A",
+          "A -> a",
+          "A -> b",
+          "A -> c",
+          "A -> d",
+          "A -> e"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "d": [
+          "d"
+        ],
+        "e": [
+          "e"
+        ],
+        "b": [
+          "b"
+        ],
+        "c": [
+          "c"
+        ],
+        "a": [
+          "a"
+        ],
+        "A": [
+          "b",
+          "d",
+          "c",
+          "e",
+          "a"
+        ],
+        "S": [
+          "d",
+          "e",
+          "b",
+          "c",
+          "a"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "A",
+          "first_set": [
+            "b",
+            "d",
+            "c",
+            "e",
+            "a"
+          ],
+          "first_string": "a, b, c, d, e"
+        },
+        {
+          "symbol": "S",
+          "first_set": [
+            "d",
+            "e",
+            "b",
+            "c",
+            "a"
+          ],
+          "first_string": "a, b, c, d, e"
+        },
+        {
+          "symbol": "a",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "b",
+          "first_set": [
+            "b"
+          ],
+          "first_string": "b"
+        },
+        {
+          "symbol": "c",
+          "first_set": [
+            "c"
+          ],
+          "first_string": "c"
+        },
+        {
+          "symbol": "d",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        },
+        {
+          "symbol": "e",
+          "first_set": [
+            "e"
+          ],
+          "first_string": "e"
+        }
+      ],
+      "summary": {
+        "total_symbols": 7,
+        "terminals": 5,
+        "nonterminals": 2
+      }
+    }
+  },
+  {
+    "test_number": 7,
+    "test_name": "Prueba 7",
+    "grammar": {
+      "productions": [
+        "S -> A",
+        "A -> B",
+        "B -> C",
+        "C -> d"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.920069Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> A",
+          "A -> B",
+          "B -> C",
+          "C -> d"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "d": [
+          "d"
+        ],
+        "C": [
+          "d"
+        ],
+        "A": [
+          "d"
+        ],
+        "B": [
+          "d"
+        ],
+        "S": [
+          "d"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "A",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        },
+        {
+          "symbol": "B",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        },
+        {
+          "symbol": "C",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        },
+        {
+          "symbol": "S",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        },
+        {
+          "symbol": "d",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        }
+      ],
+      "summary": {
+        "total_symbols": 5,
+        "terminals": 1,
+        "nonterminals": 4
+      }
+    }
+  },
+  {
+    "test_number": 8,
+    "test_name": "Prueba 8",
+    "grammar": {
+      "productions": [
+        "S -> a A b",
+        "S -> B c",
+        "A -> d",
+        "A -> ε",
+        "B -> e",
+        "B -> ε"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.922878Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> a A b",
+          "S -> B c",
+          "A -> d",
+          "A -> ε",
+          "B -> e",
+          "B -> ε"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "d": [
+          "d"
+        ],
+        "ε": [
+          "ε"
+        ],
+        "e": [
+          "e"
+        ],
+        "b": [
+          "b"
+        ],
+        "c": [
+          "c"
+        ],
+        "a": [
+          "a"
+        ],
+        "A": [
+          "ε",
+          "d"
+        ],
+        "B": [
+          "ε",
+          "e"
+        ],
+        "S": [
+          "c",
+          "a",
+          "e"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "A",
+          "first_set": [
+            "ε",
+            "d"
+          ],
+          "first_string": "d, ε"
+        },
+        {
+          "symbol": "B",
+          "first_set": [
+            "ε",
+            "e"
+          ],
+          "first_string": "e, ε"
+        },
+        {
+          "symbol": "S",
+          "first_set": [
+            "c",
+            "a",
+            "e"
+          ],
+          "first_string": "a, c, e"
+        },
+        {
+          "symbol": "a",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "b",
+          "first_set": [
+            "b"
+          ],
+          "first_string": "b"
+        },
+        {
+          "symbol": "c",
+          "first_set": [
+            "c"
+          ],
+          "first_string": "c"
+        },
+        {
+          "symbol": "d",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        },
+        {
+          "symbol": "e",
+          "first_set": [
+            "e"
+          ],
+          "first_string": "e"
+        },
+        {
+          "symbol": "ε",
+          "first_set": [
+            "ε"
+          ],
+          "first_string": "ε"
+        }
+      ],
+      "summary": {
+        "total_symbols": 9,
+        "terminals": 6,
+        "nonterminals": 3
+      }
+    }
+  },
+  {
+    "test_number": 9,
+    "test_name": "Prueba 9",
+    "grammar": {
+      "productions": [
+        "S -> A",
+        "A -> B",
+        "B -> a"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.925445Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> A",
+          "A -> B",
+          "B -> a"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "a": [
+          "a"
+        ],
+        "A": [
+          "a"
+        ],
+        "B": [
+          "a"
+        ],
+        "S": [
+          "a"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "A",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "B",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "S",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "a",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        }
+      ],
+      "summary": {
+        "total_symbols": 4,
+        "terminals": 1,
+        "nonterminals": 3
+      }
+    }
+  },
+  {
+    "test_number": 10,
+    "test_name": "Prueba 10",
+    "grammar": {
+      "productions": [
+        "E -> T E'",
+        "E' -> + T E'",
+        "E' -> ε",
+        "T -> F T'",
+        "T' -> * F T'",
+        "T' -> ε",
+        "F -> ( E )",
+        "F -> id"
+      ],
+      "start_symbol": "E"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.928092Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "E -> T E'",
+          "E' -> + T E'",
+          "E' -> ε",
+          "T -> F T'",
+          "T' -> * F T'",
+          "T' -> ε",
+          "F -> ( E )",
+          "F -> id"
+        ],
+        "start_symbol": "E"
+      },
+      "first_table": {
+        "(": [
+          "("
+        ],
+        ")": [
+          ")"
+        ],
+        "ε": [
+          "ε"
+        ],
+        "id": [
+          "id"
+        ],
+        "+": [
+          "+"
+        ],
+        "*": [
+          "*"
+        ],
+        "E'": [
+          "+",
+          "ε"
+        ],
+        "T'": [
+          "ε",
+          "*"
+        ],
+        "T": [
+          "(",
+          "id"
+        ],
+        "E": [
+          "(",
+          "id"
+        ],
+        "F": [
+          "(",
+          "id"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "(",
+          "first_set": [
+            "("
+          ],
+          "first_string": "("
+        },
+        {
+          "symbol": ")",
+          "first_set": [
+            ")"
+          ],
+          "first_string": ")"
+        },
+        {
+          "symbol": "*",
+          "first_set": [
+            "*"
+          ],
+          "first_string": "*"
+        },
+        {
+          "symbol": "+",
+          "first_set": [
+            "+"
+          ],
+          "first_string": "+"
+        },
+        {
+          "symbol": "E",
+          "first_set": [
+            "(",
+            "id"
+          ],
+          "first_string": "(, id"
+        },
+        {
+          "symbol": "E'",
+          "first_set": [
+            "+",
+            "ε"
+          ],
+          "first_string": "+, ε"
+        },
+        {
+          "symbol": "F",
+          "first_set": [
+            "(",
+            "id"
+          ],
+          "first_string": "(, id"
+        },
+        {
+          "symbol": "T",
+          "first_set": [
+            "(",
+            "id"
+          ],
+          "first_string": "(, id"
+        },
+        {
+          "symbol": "T'",
+          "first_set": [
+            "ε",
+            "*"
+          ],
+          "first_string": "*, ε"
+        },
+        {
+          "symbol": "id",
+          "first_set": [
+            "id"
+          ],
+          "first_string": "id"
+        },
+        {
+          "symbol": "ε",
+          "first_set": [
+            "ε"
+          ],
+          "first_string": "ε"
+        }
+      ],
+      "summary": {
+        "total_symbols": 11,
+        "terminals": 6,
+        "nonterminals": 5
+      }
+    }
+  },
+  {
+    "test_number": 11,
+    "test_name": "Prueba 11",
+    "grammar": {
+      "productions": [
+        "S -> x"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.930654Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> x"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "x": [
+          "x"
+        ],
+        "S": [
+          "x"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "S",
+          "first_set": [
+            "x"
+          ],
+          "first_string": "x"
+        },
+        {
+          "symbol": "x",
+          "first_set": [
+            "x"
+          ],
+          "first_string": "x"
+        }
+      ],
+      "summary": {
+        "total_symbols": 2,
+        "terminals": 1,
+        "nonterminals": 1
+      }
+    }
+  },
+  {
+    "test_number": 12,
+    "test_name": "Prueba 12",
+    "grammar": {
+      "productions": [
+        "S -> A B C D",
+        "A -> a",
+        "A -> ε",
+        "B -> b",
+        "B -> ε",
+        "C -> c",
+        "C -> ε",
+        "D -> d"
+      ],
+      "start_symbol": "S"
+    },
+    "operation": "first_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T03:40:03.934855Z",
+    "result": {
+      "success": true,
+      "operation": "first_table",
+      "grammar": {
+        "productions": [
+          "S -> A B C D",
+          "A -> a",
+          "A -> ε",
+          "B -> b",
+          "B -> ε",
+          "C -> c",
+          "C -> ε",
+          "D -> d"
+        ],
+        "start_symbol": "S"
+      },
+      "first_table": {
+        "d": [
+          "d"
+        ],
+        "ε": [
+          "ε"
+        ],
+        "b": [
+          "b"
+        ],
+        "c": [
+          "c"
+        ],
+        "a": [
+          "a"
+        ],
+        "B": [
+          "b",
+          "ε"
+        ],
+        "A": [
+          "ε",
+          "a"
+        ],
+        "D": [
+          "d"
+        ],
+        "S": [
+          "b",
+          "d",
+          "c",
+          "a"
+        ],
+        "C": [
+          "ε",
+          "c"
+        ]
+      },
+      "table_data": [
+        {
+          "symbol": "A",
+          "first_set": [
+            "ε",
+            "a"
+          ],
+          "first_string": "a, ε"
+        },
+        {
+          "symbol": "B",
+          "first_set": [
+            "b",
+            "ε"
+          ],
+          "first_string": "b, ε"
+        },
+        {
+          "symbol": "C",
+          "first_set": [
+            "ε",
+            "c"
+          ],
+          "first_string": "c, ε"
+        },
+        {
+          "symbol": "D",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        },
+        {
+          "symbol": "S",
+          "first_set": [
+            "b",
+            "d",
+            "c",
+            "a"
+          ],
+          "first_string": "a, b, c, d"
+        },
+        {
+          "symbol": "a",
+          "first_set": [
+            "a"
+          ],
+          "first_string": "a"
+        },
+        {
+          "symbol": "b",
+          "first_set": [
+            "b"
+          ],
+          "first_string": "b"
+        },
+        {
+          "symbol": "c",
+          "first_set": [
+            "c"
+          ],
+          "first_string": "c"
+        },
+        {
+          "symbol": "d",
+          "first_set": [
+            "d"
+          ],
+          "first_string": "d"
+        },
+        {
+          "symbol": "ε",
+          "first_set": [
+            "ε"
+          ],
+          "first_string": "ε"
+        }
+      ],
+      "summary": {
+        "total_symbols": 10,
+        "terminals": 5,
+        "nonterminals": 5
+      }
+    }
+  }
+]
