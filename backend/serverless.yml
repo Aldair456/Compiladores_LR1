@@ -72,6 +72,20 @@ functions:
       SERVICE_NAME: ${self:service}
       STAGE: ${self:provider.stage}
 
+  # Servicio 4b: LR(1) Trace Pretty
+  lr1-trace-pretty:
+    handler: src/handlers/handler_lr1_trace_pretty.lambda_handler
+    name: ${self:service}-${self:provider.stage}-lr1-trace-pretty
+    description: Simula parsing LR(1) y devuelve salida "bonita"
+    events:
+      - http:
+          path: /lr1-trace-pretty
+          method: post
+          cors: true
+    environment:
+      SERVICE_NAME: ${self:service}
+      STAGE: ${self:provider.stage}
+
   # Servicio 5: Pipeline completo (opcional)
   lr1-pipeline:
     handler: src/handlers/handler_pipeline.lambda_handler
