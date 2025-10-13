@@ -120,9 +120,28 @@ def construir_conjuntos_lr1(productions, terminals, nonterminals, first_table):
     Returns:
         tuple: (conjuntos_lr1, transiciones)
     """
-    # Agregar producción inicial aumentada
-    start_symbol = productions[0].split(' -> ')[0].strip()
-    augmented_productions = [f"S' -> {start_symbol}"] + productions
+    # Encontrar el símbolo inicial real (no S')
+    start_symbol = None
+    for production in productions:
+        left = production.split(' -> ')[0].strip()
+        if left != "S'":
+            start_symbol = left
+            break
+    
+    if not start_symbol:
+        start_symbol = productions[0].split(' -> ')[0].strip()
+    
+    # Filtrar producciones para evitar S' -> S' (que no existe)
+    filtered_productions = []
+    for production in productions:
+        left, right = production.split(' -> ')
+        if not (left.strip() == "S'" and right.strip() == "S'"):
+            filtered_productions.append(production)
+    
+    # Agregar producción inicial aumentada solo si no existe
+    augmented_productions = filtered_productions.copy()
+    if not any(p.startswith("S' ->") for p in filtered_productions):
+        augmented_productions = [f"S' -> {start_symbol}"] + filtered_productions
     
     # Estado inicial
     initial_item = LR1Item(f"S' -> {start_symbol}", 0, '$')
@@ -282,9 +301,6 @@ def generar_tabla_lr1(conjuntos, transiciones, productions, terminals, nontermin
     # Agregar producción inicial aumentada
     augmented_productions = [f"S' -> {productions[0].split(' -> ')[0].strip()}"] + productions
     
-    # Filtrar epsilon de terminales
-    terminals_filtered = [t for t in terminals if t != 'ε']
-    
     for i, conjunto in enumerate(conjuntos):
         action_table[i] = {}
         goto_table[i] = {}
@@ -294,16 +310,15 @@ def generar_tabla_lr1(conjuntos, transiciones, productions, terminals, nontermin
                 # Acción de reducción
                 production_index = augmented_productions.index(item.production)
                 if production_index == 0:
-                    # Aceptar solo si el lookahead es $
-                    if item.lookahead == '$':
-                        action_table[i][item.lookahead] = 'acc'
+                    # Aceptar
+                    action_table[i][item.lookahead] = 'acc'
                 else:
                     # Reducir
                     action_table[i][item.lookahead] = f'r{production_index}'
             else:
                 # Acción de shift
                 symbol_after_dot = item.get_symbol_after_dot()
-                if symbol_after_dot in terminals_filtered:
+                if symbol_after_dot in terminals:
                     if (i, symbol_after_dot) in transiciones:
                         action_table[i][symbol_after_dot] = f's{transiciones[(i, symbol_after_dot)]}'
         
@@ -319,7 +334,7 @@ def generar_tabla_lr1(conjuntos, transiciones, productions, terminals, nontermin
     }
 
 
-def generar_json_tabla_lr1(tabla_lr1, grammar_info, terminals, nonterminals, conjuntos=None):
+def generar_json_tabla_lr1(tabla_lr1, grammar_info, terminals, nonterminals):
     """
     Genera un JSON estructurado para mostrar la tabla LR(1) en una tabla HTML.
     
@@ -328,7 +343,6 @@ def generar_json_tabla_lr1(tabla_lr1, grammar_info, terminals, nonterminals, con
         grammar_info: Información de la gramática
         terminals: Lista de terminales
         nonterminals: Lista de no terminales
-        conjuntos: Lista de conjuntos LR(1) para tabla de cierre
     
     Returns:
         dict: JSON estructurado para la tabla
@@ -336,9 +350,6 @@ def generar_json_tabla_lr1(tabla_lr1, grammar_info, terminals, nonterminals, con
     action_table = tabla_lr1['action']
     goto_table = tabla_lr1['goto']
     productions = tabla_lr1['productions']
-    
-    # Filtrar epsilon de terminales
-    terminals_filtered = [t for t in terminals if t != 'ε']
     
     # Crear estructura de tabla
     table_data = []
@@ -349,8 +360,8 @@ def generar_json_tabla_lr1(tabla_lr1, grammar_info, terminals, nonterminals, con
             'goto': {}
         }
         
-        # Acciones para terminales (sin epsilon)
-        for terminal in terminals_filtered + ['$']:
+        # Acciones para terminales
+        for terminal in terminals + ['$']:
             if terminal in action_table[state]:
                 row['action'][terminal] = action_table[state][terminal]
             else:
@@ -365,7 +376,7 @@ def generar_json_tabla_lr1(tabla_lr1, grammar_info, terminals, nonterminals, con
         
         table_data.append(row)
     
-    result = {
+    return {
         "success": True,
         "operation": "lr1_table",
         "grammar": {
@@ -374,28 +385,11 @@ def generar_json_tabla_lr1(tabla_lr1, grammar_info, terminals, nonterminals, con
         },
         "augmented_productions": productions,
         "table_data": table_data,
-        "terminals": terminals_filtered + ['$'],
+        "terminals": terminals + ['$'],
         "nonterminals": nonterminals,
         "summary": {
             "total_states": len(action_table),
-            "total_terminals": len(terminals_filtered) + 1,  # +1 for $
+            "total_terminals": len(terminals) + 1,  # +1 for $
             "total_nonterminals": len(nonterminals)
         }
     }
-    
-    # Agregar tabla de cierre si se proporciona
-    if conjuntos:
-        closure_table = []
-        for i, conjunto in enumerate(conjuntos):
-            closure_items = []
-            for item in conjunto:
-                closure_items.append(str(item))
-            
-            closure_table.append({
-                "state": i,
-                "items": sorted(closure_items)
-            })
-        
-        result["closure_table"] = closure_table
-    
-    return result

@@ -17,6 +17,33 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+def expandir_producciones_con_pipe(productions):
+    """
+    Expande las producciones que contienen el símbolo | (pipe) en múltiples producciones separadas.
+    
+    Args:
+        productions: Lista de strings con las producciones
+    
+    Returns:
+        list: Lista de producciones expandidas sin pipes
+    """
+    expanded = []
+    
+    for production in productions:
+        if ' | ' in production:
+            # Dividir por el pipe
+            left, right_part = production.split(' -> ')
+            alternatives = right_part.split(' | ')
+            
+            for alt in alternatives:
+                expanded.append(f"{left.strip()} -> {alt.strip()}")
+        else:
+            # Si no tiene pipe, mantener como está
+            expanded.append(production)
+    
+    return expanded
+
+
 def generar_closure_table_detallada(conjuntos, productions):
     """
     Genera una tabla de cierre LR(1) detallada con información adicional.
@@ -151,8 +178,12 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'first_table is required for LR(1) closure'})
             }
         
+        # Expandir producciones con | (pipe) en múltiples producciones
+        expanded_productions = expandir_producciones_con_pipe(body['grammar']['productions'])
+        print(f"Producciones expandidas: {expanded_productions}")
+        
         # Extraer terminales y no terminales
-        terminals, nonterminals = extraer_symbols_from_grammar(body['grammar']['productions'])
+        terminals, nonterminals = extraer_symbols_from_grammar(expanded_productions)
         print(f"Terminales: {terminals}")
         print(f"No terminales: {nonterminals}")
         
@@ -162,7 +193,7 @@ def lambda_handler(event, context):
         
         # Construir conjuntos LR(1) usando la tabla FIRST proporcionada
         conjuntos, transiciones = construir_conjuntos_lr1(
-            body['grammar']['productions'],
+            expanded_productions,
             terminals,
             nonterminals,
             first_table
@@ -200,7 +231,27 @@ def lambda_handler(event, context):
 
 # Eventos de prueba para LR(1) Closure Table
 test_events_closure = [
-    # Caso 1: Gramática simple
+    # Caso 1: Gramática específica del usuario
+    {
+        'body': json.dumps({
+            "grammar": {
+                "productions": [
+                    "S' -> S",
+                    "S -> C C | e | a | b | c | d",
+                    "C -> c C | d"
+                ],
+                "start_symbol": "S'"
+            },
+            "first_table": {
+                "S'": ["c", "d", "e", "a", "b"],
+                "S": ["c", "d", "e", "a", "b"],
+                "C": ["c", "d"]
+            },
+            "operation": "lr1_closure_table"
+        })
+    },
+    
+    # Caso 2: Gramática simple
     {
         'body': json.dumps({
             "grammar": {
@@ -211,6 +262,11 @@ test_events_closure = [
                     "C -> d"
                 ],
                 "start_symbol": "S'"
+            },
+            "first_table": {
+                "S'": ["c", "d"],
+                "S": ["c", "d"],
+                "C": ["c", "d"]
             },
             "operation": "lr1_closure_table"
         })
@@ -249,7 +305,66 @@ test_events_closure = [
     }
 ]
 
+def test_specific_grammar():
+    """Prueba específica para la gramática del usuario"""
+    print("\n" + "="*80)
+    print("PRUEBA ESPECÍFICA: GRAMÁTICA DEL USUARIO")
+    print("="*80)
+    
+    event = {
+        'body': json.dumps({
+            "grammar": {
+                "productions": [
+                    "S' -> S",
+                    "S -> C C | e | a | b | c | d",
+                    "C -> c C | d"
+                ],
+                "start_symbol": "S'"
+            },
+            "first_table": {
+                "S'": ["c", "d", "e", "a", "b"],
+                "S": ["c", "d", "e", "a", "b"],
+                "C": ["c", "d"]
+            },
+            "operation": "lr1_closure_table"
+        })
+    }
+    
+    result = lambda_handler(event, None)
+    print(f"Status Code: {result['statusCode']}")
+    
+    if result['statusCode'] == 200:
+        body = json.loads(result['body'])
+        print("✓ Éxito")
+        
+        # Mostrar información específica del Estado 0
+        if 'closure_table' in body and len(body['closure_table']) > 0:
+            estado_0 = body['closure_table'][0]
+            print(f"\nESTADO 0:")
+            print(f"Kernel Items: {estado_0['kernel_items']}")
+            print(f"Closure Items: {estado_0['closure_items']}")
+            print(f"Transitions: {estado_0['transitions']}")
+            
+            # Verificar que no hay S' -> S' items
+            all_items = estado_0['kernel_items'] + estado_0['closure_items']
+            s_prime_items = [item for item in all_items if "S' -> S'" in item.get('item', '')]
+            if s_prime_items:
+                print(f"\n❌ ERROR: Se encontraron items S' -> S': {s_prime_items}")
+            else:
+                print(f"\n✅ CORRECTO: No hay items S' -> S'")
+        
+        print(f"\nResultado completo:")
+        print(json.dumps(body, indent=2, ensure_ascii=False))
+    else:
+        error_body = json.loads(result['body'])
+        print(f"✗ Error: {result['body']}")
+
+
 if __name__ == '__main__':
+    # Ejecutar prueba específica
+    test_specific_grammar()
+    
+    # Ejecutar todas las pruebas
     all_results_closure = []
     
     for i, event in enumerate(test_events_closure, 1):

@@ -19,6 +19,33 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
+def expandir_producciones_con_pipe(productions):
+    """
+    Expande las producciones que contienen el símbolo | (pipe) en múltiples producciones separadas.
+    
+    Args:
+        productions: Lista de strings con las producciones
+    
+    Returns:
+        list: Lista de producciones expandidas sin pipes
+    """
+    expanded = []
+    
+    for production in productions:
+        if ' | ' in production:
+            # Dividir por el pipe
+            left, right_part = production.split(' -> ')
+            alternatives = right_part.split(' | ')
+            
+            for alt in alternatives:
+                expanded.append(f"{left.strip()} -> {alt.strip()}")
+        else:
+            # Si no tiene pipe, mantener como está
+            expanded.append(production)
+    
+    return expanded
+
+
 def lambda_handler(event, context):
     try:
         # Parsear el body si viene como string
@@ -47,8 +74,12 @@ def lambda_handler(event, context):
                 'body': json.dumps({'error': 'closure_data is required for LR(1) table'})
             }
         
+        # Expandir producciones con | (pipe) en múltiples producciones
+        expanded_productions = expandir_producciones_con_pipe(body['grammar']['productions'])
+        print(f"Producciones expandidas: {expanded_productions}")
+        
         # Extraer terminales y no terminales
-        terminals, nonterminals = extraer_symbols_from_grammar(body['grammar']['productions'])
+        terminals, nonterminals = extraer_symbols_from_grammar(expanded_productions)
         print(f"Terminales: {terminals}")
         print(f"No terminales: {nonterminals}")
         
@@ -101,13 +132,13 @@ def lambda_handler(event, context):
         tabla_lr1 = generar_tabla_lr1(
             conjuntos,
             transiciones,
-            body['grammar']['productions'],
+            expanded_productions,
             terminals,
             nonterminals
         )
         
         # Generar JSON estructurado para la tabla
-        result = generar_json_tabla_lr1(tabla_lr1, body['grammar'], terminals, nonterminals, conjuntos)
+        result = generar_json_tabla_lr1(tabla_lr1, body['grammar'], terminals, nonterminals)
         
         return {
             'statusCode': 200,
