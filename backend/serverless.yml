@@ -100,6 +100,20 @@ functions:
       SERVICE_NAME: ${self:service}
       STAGE: ${self:provider.stage}
 
+  # Servicio 6: LR(1) Parse Tree
+  lr1-tree:
+    handler: src/handlers/handler_lr1_tree.lambda_handler
+    name: ${self:service}-${self:provider.stage}-lr1-tree
+    description: Construye árbol de derivación a partir de trace o tabla LR(1)
+    events:
+      - http:
+          path: /lr1-tree
+          method: post
+          cors: true
+    environment:
+      SERVICE_NAME: ${self:service}
+      STAGE: ${self:provider.stage}
+
 # plugins:
 #   - serverless-python-requirements
 
