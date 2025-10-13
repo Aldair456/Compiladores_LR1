@@ -1,120 +1,231 @@
-import { Card } from "@/components/ui/card"
+"use client"
 
-interface ClosureRow {
-  goto: string
-  kernel: string
-  state: string
-  closure: string
+import { Card } from "@/components/ui/card"
+import { useState, useEffect } from "react"
+import { useGrammar } from "@/contexts/grammar-context"
+
+interface ClosureItem {
+  item: string
+  production: string
+  dot_position: number
+  lookahead: string
+  type: "kernel" | "closure"
 }
 
-const closureData: ClosureRow[] = [
-  {
-    goto: "",
-    kernel: "[{S' → .S, $}]",
-    state: "0",
-    closure: "[{S' → .S, $}; {S → .C c, $}; {C → .c C, c/d}; {C → .d, c/d}]",
-  },
-  {
-    goto: "goto(0, S)",
-    kernel: "[{S' → S., $}]",
-    state: "1",
-    closure: "[{S' → S., $}]",
-  },
-  {
-    goto: "goto(0, C)",
-    kernel: "[{S → C.c, $}]",
-    state: "2",
-    closure: "[{S → C.c, $}]; [{C → .c C, $}]; [{C → .d, $}]",
-  },
-  {
-    goto: "goto(0, c)",
-    kernel: "[{C → c.C, c/d}]",
-    state: "3",
-    closure: "[{C → c.C, c/d}]; [{C → .c C, c/d}]; [{C → .d, c/d}]",
-  },
-  {
-    goto: "goto(0, d)",
-    kernel: "[{C → d., c/d}]",
-    state: "4",
-    closure: "[{C → d., c/d}]",
-  },
-  {
-    goto: "goto(2, c)",
-    kernel: "[{S → c C., $}]",
-    state: "5",
-    closure: "[{S → c C., $}]",
-  },
-  {
-    goto: "goto(2, C)",
-    kernel: "[{C → c.C, $}]",
-    state: "6",
-    closure: "[{C → c.C, $}]; [{C → .c C, $}]; [{C → .d, $}]",
-  },
-  {
-    goto: "goto(2, d)",
-    kernel: "[{C → d., $}]",
-    state: "7",
-    closure: "[{C → d., $}]",
-  },
-  {
-    goto: "goto(3, C)",
-    kernel: "[{C → c C., c/d}]",
-    state: "8",
-    closure: "[{C → c C., c/d}]",
-  },
-  {
-    goto: "goto(3, c)",
-    kernel: "[{C → c.c, c/d}]",
-    state: "3",
-    closure: "",
-  },
-  {
-    goto: "goto(3, d)",
-    kernel: "[{C → d., c/d}]",
-    state: "4",
-    closure: "",
-  },
-  {
-    goto: "goto(6, C)",
-    kernel: "[{C → c C., $}]",
-    state: "9",
-    closure: "[{C → c C., $}]",
-  },
-  {
-    goto: "goto(6, c)",
-    kernel: "[{C → c.C, $}]",
-    state: "6",
-    closure: "",
-  },
-  {
-    goto: "goto(6, d)",
-    kernel: "[{C → d., $}]",
-    state: "7",
-    closure: "",
-  },
-]
+interface Transition {
+  symbol: string
+  item_count: number
+  items: string[]
+}
+
+interface ClosureState {
+  state: number
+  kernel_items: ClosureItem[]
+  closure_items: ClosureItem[]
+  total_items: number
+  transitions: Record<string, Transition>
+  all_items: string[]
+}
+
+interface FirstTableData {
+  symbol: string
+  first_set: string[]
+  first_string: string
+}
+
+interface ApiResponse {
+  success: boolean
+  operation: string
+  grammar: {
+    productions: string[]
+    start_symbol: string
+  }
+  closure_table: ClosureState[]
+  terminals: string[]
+  nonterminals: string[]
+  summary: {
+    total_states: number
+    total_terminals: number
+    total_nonterminals: number
+    total_items: number
+  }
+}
 
 export default function ClosureTable() {
+  const { getGrammarForAPI } = useGrammar()
+  const [data, setData] = useState<ClosureState[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [firstTableData, setFirstTableData] = useState<Record<string, string[]>>({})
+
+  const fetchData = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Primero obtener la gramática
+      const grammarData = getGrammarForAPI()
+      
+      // Obtener FIRST table primero
+      const firstResponse = await fetch('/api/first-table', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(grammarData)
+      })
+      
+      const firstResult = await firstResponse.json()
+      
+      if (!firstResult.success) {
+        throw new Error('Failed to get FIRST table data')
+      }
+      
+      // Construir first_table object
+      const firstTable: Record<string, string[]> = {}
+      if (firstResult.table_data) {
+        firstResult.table_data.forEach((item: any) => {
+          firstTable[item.symbol] = item.first_set
+        })
+      }
+      
+      setFirstTableData(firstTable)
+      
+      // Ahora obtener closure table con gramática y first_table
+      const closureData = {
+        grammar: grammarData.grammar,
+        first_table: firstTable,
+        operation: "lr1_closure_table"
+      }
+      
+      console.log('📤 Enviando datos al LR1 Closure endpoint:', closureData)
+      
+      const closureResponse = await fetch('/api/lr1-closure', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(closureData)
+      })
+      
+      const closureResult: ApiResponse = await closureResponse.json()
+      
+      console.log('📥 Respuesta del LR1 Closure endpoint:', closureResult)
+      
+      if (closureResult.success && closureResult.closure_table) {
+        setData(closureResult.closure_table)
+        setFirstTableData(firstResult.first_table)
+      } else {
+        setError('Failed to load closure table data')
+      }
+    } catch (err) {
+      console.error('❌ Error en fetchData:', err)
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRefresh = () => {
+    fetchData()
+  }
+
+  useEffect(() => {
+    fetchData()
+  }, [])
+  if (loading) {
+    return (
+      <Card className="p-4 overflow-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">LR(1) Closure Table</h2>
+          <button 
+            onClick={handleRefresh}
+            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Refresh
+          </button>
+        </div>
+        <div className="flex items-center justify-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-gray-600">Loading...</span>
+        </div>
+      </Card>
+    )
+  }
+
+  if (error) {
+    return (
+      <Card className="p-4 overflow-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900">LR(1) Closure Table</h2>
+          <button 
+            onClick={handleRefresh}
+            className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            Retry
+          </button>
+        </div>
+        <div className="text-center py-8">
+          <div className="text-red-600 mb-2">⚠️ Error loading data</div>
+          <div className="text-gray-600 text-sm">{error}</div>
+        </div>
+      </Card>
+    )
+  }
+
   return (
     <Card className="p-4 overflow-auto">
-      <h2 className="text-lg font-semibold mb-4 text-foreground">LR(1) closure table</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold text-gray-900">LR(1) Closure Table</h2>
+        <button 
+          onClick={handleRefresh}
+          className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
+          Refresh
+        </button>
+      </div>
+      
       <div className="overflow-x-auto">
-        <table className="w-full border-collapse text-sm font-mono">
+        <table className="w-full border-collapse text-xs font-mono">
           <thead>
             <tr className="border-b-2 border-gray-300">
-              <th className="text-left p-3 font-semibold text-gray-900 bg-gray-100">Goto</th>
-              <th className="text-left p-3 font-semibold text-gray-900 bg-gray-100">Kernel</th>
-              <th className="text-left p-3 font-semibold text-gray-900 bg-gray-100">State</th>
-              <th className="text-left p-3 font-semibold text-gray-900 bg-gray-100">Closure</th>
+              <th className="text-left p-2 font-semibold text-gray-900 bg-gray-100">State</th>
+              <th className="text-left p-2 font-semibold text-gray-900 bg-gray-100">Kernel Items</th>
+              <th className="text-left p-2 font-semibold text-gray-900 bg-gray-100">Closure Items</th>
+              <th className="text-left p-2 font-semibold text-gray-900 bg-gray-100">Transitions</th>
             </tr>
           </thead>
           <tbody>
-            {closureData.map((row, idx) => (
+            {data.map((state, idx) => (
               <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50">
-                <td className="p-3 text-gray-700">{row.goto}</td>
-                <td className="p-3 text-blue-700 font-medium">{row.kernel}</td>
-                <td className="p-3 text-center text-green-600 font-bold bg-green-50">{row.state}</td>
-                <td className="p-3 text-gray-800">{row.closure}</td>
+                <td className="p-2 text-center text-green-600 font-bold bg-green-50">{state.state}</td>
+                <td className="p-2 text-gray-800">
+                  <div className="space-y-1">
+                    {state.kernel_items.map((item, i) => (
+                      <div key={i} className="text-blue-700 font-medium">
+                        {item.item}
+                      </div>
+                    ))}
+                  </div>
+                </td>
+                <td className="p-2 text-gray-700">
+                  <div className="space-y-1">
+                    {state.closure_items.map((item, i) => (
+                      <div key={i} className="text-gray-600">
+                        {item.item}
+                      </div>
+                    ))}
+                  </div>
+                </td>
+                <td className="p-2 text-gray-800">
+                  <div className="space-y-1">
+                    {Object.entries(state.transitions).map(([symbol, transition]) => (
+                      <div key={symbol} className="text-purple-600">
+                        {symbol} → {transition.item_count} items
+                      </div>
+                    ))}
+                  </div>
+                </td>
               </tr>
             ))}
           </tbody>
