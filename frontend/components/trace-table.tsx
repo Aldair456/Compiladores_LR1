@@ -20,6 +20,7 @@ export default function TraceTable() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [rows, setRows] = useState<TraceRow[]>([])
+  const [treeRoot, setTreeRoot] = useState<{ label: string; children: any[] } | null>(null)
 
   const handleRunTrace = async () => {
     try {
@@ -68,6 +69,60 @@ export default function TraceTable() {
       }
 
       setRows(data.trace_rows || [])
+      setTreeRoot(null)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleBuildTree = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+
+      const lr1Table = {
+        grammar: {
+          productions: [
+            "S' -> S",
+            "S -> a b",
+            "S -> c d",
+            "S -> e",
+          ],
+        },
+        table_data: [
+          { state: 0, action: { a: "s2", c: "s1", e: "s3" }, goto: { S: 4 } },
+          { state: 1, action: { "$": "r3" }, goto: {} },
+          { state: 2, action: { b: "s6" }, goto: {} },
+          { state: 3, action: { "$": "r4" }, goto: {} },
+          { state: 4, action: { "$": "acc" }, goto: {} },
+          { state: 5, action: { "$": "r2" }, goto: {} },
+          { state: 6, action: { "$": "r1" }, goto: {} },
+        ],
+      }
+
+      const body = {
+        operation: "lr1_tree",
+        productions: lr1Table.grammar.productions,
+        lr1_table: lr1Table,
+        input_string: tokens,
+        max_steps: Number(maxSteps) || 100,
+      }
+
+      const resp = await fetch('/api/lr1-tree', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = await resp.json()
+
+      if (!resp.ok || !data.success) {
+        throw new Error(data?.error || 'Failed to build LR1 tree')
+      }
+
+      setTreeRoot(data.root || null)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Unknown error')
     } finally {
@@ -101,9 +156,14 @@ export default function TraceTable() {
             />
           </div>
           <div className="flex md:justify-end">
-            <Button onClick={handleRunTrace} disabled={loading} className="w-full md:w-auto">
-              {loading ? 'Running…' : 'Run Trace'}
-            </Button>
+            <div className="flex gap-2 w-full md:w-auto">
+              <Button onClick={handleRunTrace} disabled={loading} className="w-full md:w-auto">
+                {loading ? 'Running…' : 'Run Trace'}
+              </Button>
+              <Button onClick={handleBuildTree} disabled={loading} variant="outline" className="w-full md:w-auto">
+                {loading ? 'Building…' : 'Build Tree'}
+              </Button>
+            </div>
           </div>
         </div>
         {error && (
@@ -135,6 +195,29 @@ export default function TraceTable() {
           </tbody>
         </table>
       </div>
+      {treeRoot && (
+        <div className="mt-6">
+          <h3 className="text-sm font-semibold text-gray-900 mb-2">Tree</h3>
+          <div className="border border-gray-300 rounded-lg p-4 bg-gray-50">
+            <ParseTree node={treeRoot} />
+          </div>
+        </div>
+      )}
     </Card>
+  )
+}
+
+function ParseTree({ node }: { node: { label: string; children: any[] } }) {
+  return (
+    <div className="inline-block p-2 border rounded">
+      <div className="text-center font-semibold mb-2">{node.label}</div>
+      {node.children && node.children.length > 0 && (
+        <div className="flex gap-3">
+          {node.children.map((child, idx) => (
+            <ParseTree key={idx} node={child} />
+          ))}
+        </div>
+      )}
+    </div>
   )
 }
