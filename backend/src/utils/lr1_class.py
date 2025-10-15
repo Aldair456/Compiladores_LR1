@@ -404,6 +404,19 @@ class LR1:
         # Si no encuentra, usar el primero
         return self.expanded_productions[0].split(' -> ')[0].strip()
     
+    def _extract_symbols_from_grammar(self, productions: List[str]) -> Tuple[List[str], List[str]]:
+        """
+        Extrae terminales y no terminales de una lista de producciones.
+        Método interno para uso en la clase.
+        
+        Args:
+            productions: Lista de producciones
+        
+        Returns:
+            tuple: (terminales, no_terminales)
+        """
+        return extraer_symbols_from_grammar(productions)
+    
     def calcular_first(self) -> Dict[str, List[str]]:
         """
         Calcula la tabla FIRST para todos los símbolos de la gramática.
@@ -565,6 +578,197 @@ class LR1:
             print(f"  FOLLOW({symbol}) = {{{', '.join(sorted(follow_set))}}}")
         
         print("="*60)
+    
+    def first_seq(self, seq: List[str]) -> Set[str]:
+        """
+        Calcula FIRST(seq) para una secuencia de símbolos.
+        
+        Args:
+            seq: Lista de símbolos [X1, X2, ..., Xn]
+        
+        Returns:
+            set: FIRST(seq)
+        """
+        if not seq:
+            return {'ε'}
+        
+        result = set()
+        for i, symbol in enumerate(seq):
+            if symbol in self.first_table:
+                first_set = set(self.first_table[symbol])
+                result.update(first_set - {'ε'})
+                if 'ε' not in first_set:
+                    break
+            else:
+                # Es terminal
+                result.add(symbol)
+                break
+        else:
+            # Si todos pueden ser ε, agregar ε
+            result.add('ε')
+        
+        return result
+    
+    def first_of_beta_a(self, beta: List[str], a: str) -> Set[str]:
+        """
+        Calcula FIRST(β a) para lookaheads en construcción LR(1).
+        
+        Args:
+            beta: Lista de símbolos β
+            a: Terminal de lookahead
+        
+        Returns:
+            set: FIRST(β a)
+        """
+        # Crear secuencia β + a
+        seq = beta + [a]
+        return self.first_seq(seq)
+    
+    def closure(self, items: Set[LR1Item]) -> Set[LR1Item]:
+        """
+        Calcula el closure LR(1) de un conjunto de elementos.
+        
+        Args:
+            items: Conjunto inicial de elementos LR(1)
+        
+        Returns:
+            set: Closure LR(1) del conjunto
+        """
+        closure_set = set(items)
+        changed = True
+        
+        while changed:
+            changed = False
+            
+            for item in list(closure_set):
+                symbol_after_dot = item.get_symbol_after_dot()
+                
+                if symbol_after_dot and symbol_after_dot in self.nonterminals:
+                    # Buscar producciones que empiecen con este símbolo
+                    for production in self.expanded_productions:
+                        left, right = production.split(' -> ')
+                        left = left.strip()
+                        
+                        if left == symbol_after_dot:
+                            # Calcular FIRST(βa) donde β son los símbolos después del punto
+                            item_left, item_right = item.production.split(' -> ')
+                            item_right_symbols = item_right.split()
+                            
+                            # Símbolos después del punto (β)
+                            beta = []
+                            if item.dot_position + 1 < len(item_right_symbols):
+                                beta = item_right_symbols[item.dot_position + 1:]
+                            
+                            # Calcular FIRST(βa)
+                            lookaheads = self.first_of_beta_a(beta, item.lookahead)
+                            
+                            for lookahead in lookaheads:
+                                if lookahead != 'ε':  # No agregar ε como lookahead
+                                    new_item = LR1Item(production, 0, lookahead)
+                                    if new_item not in closure_set:
+                                        closure_set.add(new_item)
+                                        changed = True
+        
+        return closure_set
+    
+    def goto(self, items: Set[LR1Item], X: str) -> Set[LR1Item]:
+        """
+        Calcula goto(I, X) para un conjunto de elementos y un símbolo.
+        
+        Args:
+            items: Conjunto de elementos LR(1)
+            X: Símbolo para mover el punto
+        
+        Returns:
+            set: goto(I, X)
+        """
+        goto_items = set()
+        
+        # Mover el punto sobre X en todos los ítems donde toca X
+        for item in items:
+            if item.get_symbol_after_dot() == X:
+                new_item = LR1Item(item.production, item.dot_position + 1, item.lookahead)
+                goto_items.add(new_item)
+        
+        # Calcular closure del conjunto resultante
+        if goto_items:
+            return self.closure(goto_items)
+        else:
+            return set()
+    
+    def aumentar_gramatica(self, start_symbol: str, end_marker: str = "$") -> List[str]:
+        """
+        Aumenta la gramática agregando S' -> S si es necesario.
+        
+        Args:
+            start_symbol: Símbolo inicial de la gramática
+            end_marker: Marcador de fin (por defecto "$")
+        
+        Returns:
+            list: Lista de producciones aumentadas
+        """
+        augmented_productions = self.expanded_productions.copy()
+        
+        # Si el símbolo inicial no es S', agregar producción aumentada
+        if not start_symbol.startswith("S'"):
+            augmented_productions = [f"S' -> {start_symbol}"] + augmented_productions
+        
+        return augmented_productions
+    
+    def construir_coleccion_lr1(self) -> Tuple[List[Set[LR1Item]], Dict[Tuple[int, str], int]]:
+        """
+        Construye la colección canónica de conjuntos LR(1).
+        
+        Returns:
+            tuple: (lista_de_estados, transiciones)
+                - lista_de_estados: Lista de conjuntos de elementos LR(1)
+                - transiciones: Diccionario {(estado, símbolo): estado_destino}
+        """
+        # Asegurar que tenemos FIRST y FOLLOW calculados
+        if not self._first_calculado:
+            self.calcular_first()
+        if not self._follow_calculado:
+            self.calcular_follow()
+        
+        # Crear elemento inicial
+        initial_item = LR1Item(f"S' -> {self.start_symbol}", 0, '$')
+        initial_set = self.closure({initial_item})
+        
+        # Construir todos los estados
+        estados = [initial_set]
+        transiciones = {}
+        estados_por_conjunto = {frozenset(initial_set): 0}
+        
+        i = 0
+        while i < len(estados):
+            current_set = estados[i]
+            
+            # Calcular transiciones desde este estado
+            symbols_after_dot = set()
+            for item in current_set:
+                symbol = item.get_symbol_after_dot()
+                if symbol:
+                    symbols_after_dot.add(symbol)
+            
+            for symbol in symbols_after_dot:
+                # Calcular goto(I, symbol)
+                goto_set = self.goto(current_set, symbol)
+                
+                if goto_set:
+                    # Verificar si ya existe este conjunto
+                    goto_frozen = frozenset(goto_set)
+                    if goto_frozen in estados_por_conjunto:
+                        estado_destino = estados_por_conjunto[goto_frozen]
+                    else:
+                        estado_destino = len(estados)
+                        estados.append(goto_set)
+                        estados_por_conjunto[goto_frozen] = estado_destino
+                    
+                    transiciones[(i, symbol)] = estado_destino
+            
+            i += 1
+        
+        return estados, transiciones
 
 
 # Función de conveniencia para uso rápido
