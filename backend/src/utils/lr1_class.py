@@ -730,8 +730,22 @@ class LR1:
         if not self._follow_calculado:
             self.calcular_follow()
         
+        # Determinar el símbolo inicial real
+        # Si hay S' en las producciones, usar ese, sino buscar el símbolo inicial
+        augmented_start = None
+        for prod in self.expanded_productions:
+            if prod.startswith("S' -> "):
+                augmented_start = "S'"
+                target = prod.split(" -> ")[1].strip()
+                break
+        
+        if augmented_start:
+            start_for_item = target
+        else:
+            start_for_item = self.start_symbol
+        
         # Crear elemento inicial
-        initial_item = LR1Item(f"S' -> {self.start_symbol}", 0, '$')
+        initial_item = LR1Item(f"S' -> {start_for_item}", 0, '$')
         initial_set = self.closure({initial_item})
         
         # Construir todos los estados
@@ -767,6 +781,11 @@ class LR1:
                     transiciones[(i, symbol)] = estado_destino
             
             i += 1
+        
+        # Guardar en la instancia
+        self.lr1_conjuntos = estados
+        self.transiciones = transiciones
+        self._lr1_calculado = True
         
         return estados, transiciones
 
