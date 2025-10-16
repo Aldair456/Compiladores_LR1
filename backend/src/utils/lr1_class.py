@@ -2,7 +2,7 @@ import json
 import os
 import logging
 from datetime import datetime
-from typing import Dict, Any, List, Set, Tuple
+from typing import Dict, Any, List, Set, Tuple, Optional
 from collections import defaultdict
 
 # Configurar logging
@@ -769,6 +769,626 @@ class LR1:
             i += 1
         
         return estados, transiciones
+
+
+def convertir_estados_a_closure_table(estados: List[Set[LR1Item]], transiciones: Dict[Tuple[int, str], int]) -> Dict[str, Any]:
+    """
+    Convierte estados LR(1) a formato de closure table.
+    
+    Args:
+        estados: Lista de conjuntos de elementos LR(1)
+        transiciones: Diccionario de transiciones
+    
+    Returns:
+        dict: Closure table en formato estándar
+    """
+    states_data = []
+    for i, estado in enumerate(estados):
+        # Convertir ítems a strings legibles
+        items_strings = [str(item) for item in sorted(estado, key=str)]
+        
+        # Construir transiciones desde este estado
+        state_transitions = {}
+        for (estado_origen, simbolo), estado_destino in transiciones.items():
+            if estado_origen == i:
+                state_transitions[simbolo] = estado_destino
+        
+        states_data.append({
+            "id": i,
+            "items": items_strings,
+            "transitions": state_transitions
+        })
+    
+    return {
+        "states": states_data
+    }
+
+
+def reconstruir_estados_desde_closure_table(closure_table: Dict[str, Any], lr1: LR1) -> Tuple[List[Set[LR1Item]], Dict[Tuple[int, str], int]]:
+    """
+    Reconstruye estados LR(1) desde closure table.
+    
+    Args:
+        closure_table: Closure table en formato estándar
+        lr1: Instancia de LR1
+    
+    Returns:
+        tuple: (estados, transiciones)
+    """
+    estados = []
+    transiciones = {}
+    
+    for state_data in closure_table['states']:
+        estado_id = state_data['id']
+        items = set()
+        
+        # Reconstruir elementos LR(1) desde strings
+        for item_str in state_data['items']:
+            item = parsear_item_string(item_str)
+            if item:
+                items.add(item)
+        
+        estados.append(items)
+        
+        # Reconstruir transiciones
+        for simbolo, estado_destino in state_data['transitions'].items():
+            transiciones[(estado_id, simbolo)] = estado_destino
+    
+    return estados, transiciones
+
+
+def parsear_item_string(item_str: str) -> Optional[LR1Item]:
+    """
+    Parsea un string de elemento LR(1) a objeto LR1Item.
+    
+    Args:
+        item_str: String en formato "[A -> α • β, a]"
+    
+    Returns:
+        LR1Item: Elemento parseado o None si hay error
+    """
+    try:
+        # Remover corchetes externos
+        if not item_str.startswith('[') or not item_str.endswith(']'):
+            return None
+        
+        content = item_str[1:-1]
+        
+        # Dividir por la última coma para separar lookahead
+        parts = content.rsplit(', ', 1)
+        if len(parts) != 2:
+            return None
+        
+        production_part, lookahead = parts
+        
+        # Buscar el punto - manejar espacios extra
+        if ' • ' in production_part:
+            # Caso normal: punto en el medio
+            left, right_with_dot = production_part.split(' -> ')
+            left = left.strip()
+            right_symbols = right_with_dot.split()
+            dot_position = 0
+            
+            for i, symbol in enumerate(right_symbols):
+                if symbol == '•':
+                    dot_position = i
+                    break
+            
+            # Remover el punto de los símbolos
+            right_symbols = [s for s in right_symbols if s != '•']
+            production = f"{left} -> {' '.join(right_symbols)}"
+            
+        elif production_part.endswith(' •'):
+            # Caso: punto al final
+            production_part = production_part[:-2].strip()
+            if ' -> ' in production_part:
+                left, right = production_part.split(' -> ')
+                left = left.strip()
+                right_symbols = right.split() if right.strip() else []
+                dot_position = len(right_symbols)
+                production = f"{left} -> {right}"
+            else:
+                return None
+        else:
+            return None
+        
+        return LR1Item(production, dot_position, lookahead.strip())
+        
+    except Exception as e:
+        logger.warning(f"Error parseando item: {item_str}, error: {e}")
+        return None
+
+
+def construir_tabla_lr1_completa(
+    grammar: Dict[str, Any],
+    options: Dict[str, Any] = None,
+    closure_table: Dict[str, Any] = None
+) -> Dict[str, Any]:
+    """
+    Construye la tabla LR(1) completa desde cero o desde closure_table existente.
+    
+    Args:
+        grammar: Gramática con productions y start_symbol
+        options: Opciones de configuración
+        closure_table: Closure table opcional (si se proporciona, se usa tal cual)
+    
+    Returns:
+        dict: Tabla LR(1) completa en formato JSON
+    """
+    if options is None:
+        options = {}
+    
+    # Configurar opciones
+    augment = options.get('augment', True)
+    epsilon_symbol = options.get('epsilon_symbol', 'ε')
+    end_marker = options.get('end_marker', '$')
+    accept_token = options.get('accept_token', 'acc')
+    
+    # Obtener información de la gramática
+    productions = grammar['productions']
+    start_symbol = grammar['start_symbol']
+    
+    # 1) Pre-procesamiento de la gramática
+    # Determinar símbolo inicial original
+    original_start_symbol = start_symbol
+    if augment and start_symbol == "S'":
+        # Si ya es S', encontrar el símbolo original
+        for prod in productions:
+            if prod.startswith("S' -> "):
+                original_start_symbol = prod.split(" -> ")[1].strip()
+                break
+        else:
+            # Si no hay S' -> X, usar el primer símbolo no-S'
+            for prod in productions:
+                left = prod.split(" -> ")[0].strip()
+                if left != "S'":
+                    original_start_symbol = left
+                    break
+    
+    # Crear instancia LR1
+    lr1 = LR1(productions, start_symbol)
+    
+    # Expandir alternativas con | a producciones simples
+    expanded_productions = lr1.obtener_producciones_expandidas()
+    
+    # Aplicar aumentación si es necesario
+    if augment:
+        augmented_productions = lr1.aumentar_gramatica(original_start_symbol, end_marker)
+    else:
+        augmented_productions = expanded_productions
+    
+    # Actualizar instancia
+    lr1.expanded_productions = augmented_productions
+    lr1.terminals, lr1.nonterminals = lr1._extract_symbols_from_grammar(augmented_productions)
+    
+    # 2) Cálculo FIRST/FOLLOW
+    lr1.calcular_first()
+    lr1.calcular_follow()
+    
+    # Extraer símbolos (sin $ en terminales)
+    terminals = [t for t in lr1.obtener_terminals() if t != end_marker]
+    nonterminals = lr1.obtener_nonterminals()
+    
+    # 3) Conjunto canónico LR(1)
+    if closure_table is None:
+        # Construir estados LR(1) desde cero
+        estados, transiciones = lr1.construir_coleccion_lr1()
+        # Convertir a formato closure_table
+        closure_table = convertir_estados_a_closure_table(estados, transiciones)
+    else:
+        # Usar closure_table proporcionado tal cual
+        estados, transiciones = reconstruir_estados_desde_closure_table(closure_table, lr1)
+    
+    # Crear tabla de producciones numeradas (sin S' -> S si es aumentada)
+    productions_table = []
+    production_map = {}
+    
+    for production in augmented_productions:
+        # Si es producción aumentada S' -> S, no la numeramos en la tabla
+        if augment and production.startswith("S' -> ") and production.split(" -> ")[1].strip() == original_start_symbol:
+            continue
+        
+        prod_num = len(productions_table) + 1
+        productions_table.append({
+            "number": prod_num,
+            "production": production,
+            "left_side": production.split(' -> ')[0].strip(),
+            "right_side": production.split(' -> ')[1].strip()
+        })
+        production_map[production] = prod_num
+    
+    # 4) Construcción de ACTION / GOTO
+    action_table = {}
+    goto_table = {}
+    reductions = {}
+    conflicts = []
+    
+    # Procesar cada estado del closure_table
+    for state_data in closure_table['states']:
+        estado_id = state_data['id']
+        items_strings = state_data['items']
+        state_transitions = state_data.get('transitions', {})
+        
+        # Inicializar tablas para este estado
+        action_table[str(estado_id)] = {}
+        goto_table[str(estado_id)] = {}
+        
+        # Procesar transiciones para ACTION (shift) y GOTO
+        for symbol, target_state in state_transitions.items():
+            if symbol in terminals:
+                # Acción de shift
+                action_table[str(estado_id)][symbol] = f"s{target_state}"
+            elif symbol in nonterminals:
+                # Acción de goto
+                goto_table[str(estado_id)][symbol] = target_state
+        
+        # Procesar items para reducciones y accept
+        for item_str in items_strings:
+            item = parsear_item_string(item_str)
+            if not item:
+                continue
+            
+            if item.is_reduce_item():
+                production = item.production
+                lookahead = item.lookahead
+                
+                # Verificar si es producción aumentada S' -> S
+                if augment and production.startswith("S' -> ") and production.split(" -> ")[1].strip() == original_start_symbol:
+                    # Es acción de aceptación
+                    if lookahead == end_marker:
+                        action_table[str(estado_id)][end_marker] = accept_token
+                else:
+                    # Es reducción normal
+                    prod_num = production_map.get(production, 0)
+                    
+                    if prod_num == 0:
+                        # Buscar en producciones expandidas
+                        for i, exp_prod in enumerate(augmented_productions):
+                            if exp_prod == production:
+                                prod_num = i + 1
+                                break
+                    
+                    if prod_num > 0:
+                        # Agregar acción de reducción
+                        if lookahead in action_table[str(estado_id)]:
+                            # Verificar conflicto
+                            existing_action = action_table[str(estado_id)][lookahead]
+                            if existing_action != f"r{prod_num}":
+                                conflicts.append({
+                                    "state": estado_id,
+                                    "symbol": lookahead,
+                                    "conflict_type": "reduce_reduce" if existing_action.startswith('r') else "shift_reduce",
+                                    "existing_action": existing_action,
+                                    "new_action": f"r{prod_num}",
+                                    "item": str(item)
+                                })
+                        else:
+                            action_table[str(estado_id)][lookahead] = f"r{prod_num}"
+                        
+                        # Guardar información de reducción
+                        if estado_id not in reductions:
+                            reductions[estado_id] = {}
+                        reductions[estado_id][lookahead] = {
+                            "production": production,
+                            "production_number": prod_num,
+                            "item": str(item)
+                        }
+    
+    # Determinar símbolo inicial final
+    final_start_symbol = "S'" if augment else original_start_symbol
+    
+    # Construir respuesta JSON
+    response = {
+        "success": True,
+        "operation": "lr1_table",
+        "grammar": {
+            "augmented": augment,
+            "start_symbol": final_start_symbol,
+            "original_start_symbol": original_start_symbol,
+            "epsilon": epsilon_symbol,
+            "end_marker": end_marker,
+            "accept_token": accept_token,
+            "original_productions": productions,
+            "expanded_productions": [p['production'] for p in productions_table]
+        },
+        "lr1_table": {
+            "action_table": action_table,
+            "goto_table": goto_table,
+            "reductions": reductions,
+            "conflicts": conflicts
+        },
+        "closure_table": closure_table,
+        "productions_table": productions_table,
+        "symbols": {
+            "terminals": terminals,
+            "nonterminals": nonterminals
+        },
+        "summary": {
+            "total_states": len(action_table),
+            "total_terminals": len(terminals),
+            "total_nonterminals": len(nonterminals),
+            "total_productions": len(productions_table),
+            "total_conflicts": len(conflicts),
+            "conflict_types": list(set(conflict["conflict_type"] for conflict in conflicts))
+        }
+    }
+    
+    return response
+
+
+def reconstruir_tabla_lr1_desde_closure_table(
+    closure_table: Dict[str, Any],
+    grammar: Dict[str, Any],
+    options: Dict[str, Any] = None
+) -> Tuple[Dict[str, Dict[str, str]], Dict[str, Dict[str, int]], Dict[int, Dict[str, Any]], List[Dict[str, Any]], List[str], List[str], List[Dict[str, Any]]]:
+    """
+    Reconstruye la tabla LR(1) ACTION/GOTO desde un closure_table existente.
+    
+    Args:
+        closure_table: Closure table con estados y transiciones
+        grammar: Gramática con productions y start_symbol
+        options: Opciones de configuración
+    
+    Returns:
+        tuple: (action_table, goto_table, reductions, conflicts, terminals, nonterminals, productions_table)
+    """
+    if options is None:
+        options = {}
+    
+    # Configurar opciones
+    augment = options.get('augment', True)
+    epsilon_symbol = options.get('epsilon_symbol', 'ε')
+    end_marker = options.get('end_marker', '$')
+    
+    # Obtener información de la gramática
+    productions = grammar['productions']
+    start_symbol = grammar['start_symbol']
+    
+    # Determinar símbolo inicial original
+    original_start_symbol = start_symbol
+    if augment and start_symbol == "S'":
+        # Si ya es S', encontrar el símbolo original
+        for prod in productions:
+            if prod.startswith("S' -> "):
+                original_start_symbol = prod.split(" -> ")[1].strip()
+                break
+        else:
+            # Si no hay S' -> X, usar el primer símbolo no-S'
+            for prod in productions:
+                left = prod.split(" -> ")[0].strip()
+                if left != "S'":
+                    original_start_symbol = left
+                    break
+    
+    # Crear instancia LR1 para cálculos auxiliares
+    lr1 = LR1(productions, start_symbol)
+    
+    # Aplicar aumentación si es necesario
+    if augment:
+        augmented_productions = lr1.aumentar_gramatica(original_start_symbol, end_marker)
+    else:
+        augmented_productions = lr1.obtener_producciones_expandidas()
+    
+    # Actualizar instancia
+    lr1.expanded_productions = augmented_productions
+    lr1.terminals, lr1.nonterminals = lr1._extract_symbols_from_grammar(augmented_productions)
+    
+    # Calcular FIRST y FOLLOW
+    lr1.calcular_first()
+    lr1.calcular_follow()
+    
+    # Extraer terminales y no terminales (sin $ en terminales)
+    terminals = [t for t in lr1.obtener_terminals() if t != end_marker]
+    nonterminals = lr1.obtener_nonterminals()
+    
+    # Crear tabla de producciones numeradas (sin S' -> S si es aumentada)
+    productions_table = []
+    production_map = {}
+    
+    for i, production in enumerate(augmented_productions):
+        # Si es producción aumentada S' -> S, no la numeramos en la tabla
+        if augment and production.startswith("S' -> ") and production.split(" -> ")[1].strip() == original_start_symbol:
+            continue
+        
+        prod_num = len(productions_table) + 1
+        productions_table.append({
+            "number": prod_num,
+            "production": production,
+            "left_side": production.split(' -> ')[0].strip(),
+            "right_side": production.split(' -> ')[1].strip()
+        })
+        production_map[production] = prod_num
+    
+    # Inicializar tablas
+    action_table = {}
+    goto_table = {}
+    reductions = {}
+    conflicts = []
+    
+    # Procesar cada estado del closure_table
+    for state_data in closure_table['states']:
+        estado_id = state_data['id']
+        items_strings = state_data['items']
+        state_transitions = state_data.get('transitions', {})
+        
+        # Inicializar tablas para este estado
+        action_table[str(estado_id)] = {}
+        goto_table[str(estado_id)] = {}
+        
+        # 1. Procesar transiciones para ACTION (shift) y GOTO
+        for symbol, target_state in state_transitions.items():
+            if symbol in terminals:
+                # Acción de shift
+                action_table[str(estado_id)][symbol] = f"s{target_state}"
+            elif symbol in nonterminals:
+                # Acción de goto
+                goto_table[str(estado_id)][symbol] = target_state
+        
+        # 2. Procesar items para reducciones y accept
+        for item_str in items_strings:
+            item = parsear_item_string(item_str)
+            if not item:
+                continue
+            
+            if item.is_reduce_item():
+                production = item.production
+                lookahead = item.lookahead
+                
+                # Verificar si es producción aumentada S' -> S
+                if augment and production.startswith("S' -> ") and production.split(" -> ")[1].strip() == original_start_symbol:
+                    # Es acción de aceptación
+                    if lookahead == end_marker:
+                        action_table[str(estado_id)][end_marker] = "acc"
+                else:
+                    # Es reducción normal
+                    prod_num = production_map.get(production, 0)
+                    
+                    if prod_num > 0:
+                        # Agregar acción de reducción
+                        if lookahead in action_table[str(estado_id)]:
+                            # Verificar conflicto
+                            existing_action = action_table[str(estado_id)][lookahead]
+                            if existing_action != f"r{prod_num}":
+                                conflicts.append({
+                                    "state": estado_id,
+                                    "symbol": lookahead,
+                                    "conflict_type": "reduce_reduce" if existing_action.startswith('r') else "shift_reduce",
+                                    "existing_action": existing_action,
+                                    "new_action": f"r{prod_num}",
+                                    "item": str(item)
+                                })
+                        else:
+                            action_table[str(estado_id)][lookahead] = f"r{prod_num}"
+                        
+                        # Guardar información de reducción
+                        if estado_id not in reductions:
+                            reductions[estado_id] = {}
+                        reductions[estado_id][lookahead] = {
+                            "production": production,
+                            "production_number": prod_num,
+                            "item": str(item)
+                        }
+    
+    return action_table, goto_table, reductions, conflicts, terminals, nonterminals, productions_table
+
+
+def construir_tabla_lr1(
+    estados: List[Set[LR1Item]], 
+    transiciones: Dict[Tuple[int, str], int],
+    lr1: LR1,
+    productions: List[str],
+    start_symbol: str
+) -> Tuple[Dict[str, Dict[str, str]], Dict[str, Dict[str, int]], Dict[int, Dict[str, Any]], List[Dict[str, Any]]]:
+    """
+    Construye la tabla LR(1) ACTION/GOTO (función legacy).
+    
+    Args:
+        estados: Lista de estados LR(1)
+        transiciones: Diccionario de transiciones
+        lr1: Instancia de LR1
+        productions: Lista de producciones
+        start_symbol: Símbolo inicial
+    
+    Returns:
+        tuple: (action_table, goto_table, reductions, conflicts)
+    """
+    action_table = {}
+    goto_table = {}
+    reductions = {}
+    conflicts = []
+    
+    # Obtener terminales y no terminales
+    terminals = lr1.obtener_terminals()
+    nonterminals = lr1.obtener_nonterminals()
+    
+    # Crear mapeo de producciones a números
+    production_map = {}
+    for i, production in enumerate(productions):
+        production_map[production] = i + 1
+    
+    # Procesar cada estado
+    for estado_id, estado in enumerate(estados):
+        action_table[str(estado_id)] = {}
+        goto_table[str(estado_id)] = {}
+        
+        # Procesar cada elemento en el estado
+        for item in estado:
+            if item.is_reduce_item():
+                # Es un elemento de reducción
+                production = item.production
+                lookahead = item.lookahead
+                
+                # Determinar número de producción
+                prod_num = production_map.get(production, 0)
+                if prod_num == 0:
+                    # Buscar en producciones expandidas
+                    expanded_prods = lr1.obtener_producciones_expandidas()
+                    for i, exp_prod in enumerate(expanded_prods):
+                        if exp_prod == production:
+                            prod_num = i + 1
+                            break
+                
+                if prod_num > 0:
+                    # Agregar acción de reducción
+                    if lookahead in action_table[str(estado_id)]:
+                        # Conflicto
+                        existing_action = action_table[str(estado_id)][lookahead]
+                        conflicts.append({
+                            "state": estado_id,
+                            "symbol": lookahead,
+                            "conflict_type": "reduce_reduce" if existing_action.startswith('r') else "shift_reduce",
+                            "existing_action": existing_action,
+                            "new_action": f"r{prod_num}",
+                            "item": str(item)
+                        })
+                    else:
+                        action_table[str(estado_id)][lookahead] = f"r{prod_num}"
+                    
+                    # Guardar información de reducción
+                    if estado_id not in reductions:
+                        reductions[estado_id] = {}
+                    reductions[estado_id][lookahead] = {
+                        "production": production,
+                        "production_number": prod_num,
+                        "item": str(item)
+                    }
+            else:
+                # Es un elemento de shift
+                symbol_after_dot = item.get_symbol_after_dot()
+                if symbol_after_dot:
+                    if symbol_after_dot in terminals:
+                        # Acción de shift
+                        if (estado_id, symbol_after_dot) in transiciones:
+                            target_state = transiciones[(estado_id, symbol_after_dot)]
+                            
+                            if symbol_after_dot in action_table[str(estado_id)]:
+                                # Conflicto
+                                existing_action = action_table[str(estado_id)][symbol_after_dot]
+                                conflicts.append({
+                                    "state": estado_id,
+                                    "symbol": symbol_after_dot,
+                                    "conflict_type": "shift_reduce",
+                                    "existing_action": existing_action,
+                                    "new_action": f"s{target_state}",
+                                    "item": str(item)
+                                })
+                            else:
+                                action_table[str(estado_id)][symbol_after_dot] = f"s{target_state}"
+                    
+                    elif symbol_after_dot in nonterminals:
+                        # Acción de goto
+                        if (estado_id, symbol_after_dot) in transiciones:
+                            target_state = transiciones[(estado_id, symbol_after_dot)]
+                            goto_table[str(estado_id)][symbol_after_dot] = target_state
+        
+        # Agregar acción de aceptación si es el estado inicial con S' -> S •
+        if estado_id == 0:
+            for item in estado:
+                if item.production.startswith("S' ->") and item.is_reduce_item() and item.lookahead == '$':
+                    action_table[str(estado_id)]['$'] = "accept"
+                    break
+    
+    return action_table, goto_table, reductions, conflicts
 
 
 # Función de conveniencia para uso rápido
