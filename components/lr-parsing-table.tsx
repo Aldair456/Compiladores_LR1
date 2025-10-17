@@ -57,6 +57,20 @@ interface ApiResponse {
   }
 }
 
+// Helper function to safely convert any value to string
+const safeToString = (value: any): string => {
+  if (value === null || value === undefined) {
+    return ""
+  }
+  if (typeof value === 'string') {
+    return value
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value)
+  }
+  return String(value)
+}
+
 export default function LRParsingTable() {
   const { getGrammarForAPI, grammarRules } = useGrammar()
   const [data, setData] = useState<TableData[]>([])
@@ -66,6 +80,9 @@ export default function LRParsingTable() {
   const [error, setError] = useState<string | null>(null)
   const [closureData, setClosureData] = useState<any[]>([])
   const [summary, setSummary] = useState<any>(null)
+  const [reductions, setReductions] = useState<Record<string, any>>({})
+  const [conflicts, setConflicts] = useState<any[]>([])
+  const [productionsTable, setProductionsTable] = useState<any[]>([])
 
   const fetchData = async () => {
     try {
@@ -75,9 +92,43 @@ export default function LRParsingTable() {
       // Obtener la gramática del contexto
       const grammarData = getGrammarForAPI()
       
-      // Preparar el request según el nuevo formato
+      // PASO 1: Obtener las clausuras del endpoint lr1-closure
+      console.log('🔄 PASO 1: Obteniendo clausuras del endpoint lr1-closure...')
+      
+      const closureRequestData = {
+        start_symbol: grammarData.grammar.start_symbol,
+        productions: grammarData.grammar.productions,
+        options: {
+          augment: true,
+          epsilon_symbol: "ε",
+          end_marker: "$",
+          accept_token: "acc"
+        }
+      }
+
+      console.log('📤 Request a lr1-closure:', closureRequestData)
+
+      const closureResponse = await fetch('/api/lr1-closure', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(closureRequestData)
+      })
+
+      const closureResult = await closureResponse.json()
+      console.log('📥 Respuesta de lr1-closure:', closureResult)
+
+      if (!closureResult.success) {
+        throw new Error('Failed to get closure data')
+      }
+
+      // PASO 2: Preparar el request para lr1-table con las clausuras
+      console.log('🔄 PASO 2: Preparando request para lr1-table con clausuras...')
+      
       const requestData = {
         grammar: grammarData.grammar,
+        closure_table: closureResult.closure_table, // ← CLAUSURAS OBLIGATORIAS
         options: {
           augment: true,
           epsilon_symbol: "ε",
@@ -89,6 +140,7 @@ export default function LRParsingTable() {
       console.log('📤 Enviando datos al LR1 Table endpoint:', requestData)
       console.log('📤 Body completo que se envía:', JSON.stringify(requestData, null, 2))
       console.log('📤 Grammar data:', requestData.grammar)
+      console.log('📤 Closure table:', requestData.closure_table)
       console.log('📤 Options:', requestData.options)
 
       const response = await fetch('/api/lr1-table', {
@@ -106,6 +158,8 @@ export default function LRParsingTable() {
       console.log('📥 Status de la respuesta:', response.status)
       console.log('📥 Success:', result.success)
       console.log('📥 LR1 Table data:', result.lr1_table)
+      console.log('📥 Action Table:', result.lr1_table?.action_table)
+      console.log('📥 Goto Table:', result.lr1_table?.goto_table)
       console.log('📥 Symbols:', result.symbols)
       console.log('📥 Summary:', result.summary)
 
@@ -121,18 +175,25 @@ export default function LRParsingTable() {
         
         allStates.forEach(stateId => {
           const state = parseInt(stateId)
-          const action = result.lr1_table.action_table[stateId] || {}
-          const goto = result.lr1_table.goto_table[stateId] || {}
+          const actionRaw = result.lr1_table.action_table[stateId] || {}
+          const gotoRaw = result.lr1_table.goto_table[stateId] || {}
+          
+          // Convertir action values a strings
+          const actionStrings: Record<string, string> = {}
+          Object.entries(actionRaw).forEach(([symbol, actionValue]) => {
+            console.log(`Processing action for state ${stateId}, symbol ${symbol}:`, actionValue, typeof actionValue)
+            actionStrings[symbol] = safeToString(actionValue)
+          })
           
           // Convertir goto numbers a strings para la tabla
           const gotoStrings: Record<string, string> = {}
-          Object.entries(goto).forEach(([symbol, targetState]) => {
-            gotoStrings[symbol] = targetState.toString()
+          Object.entries(gotoRaw).forEach(([symbol, targetState]) => {
+            gotoStrings[symbol] = safeToString(targetState)
           })
           
           tableData.push({
             state,
-            action,
+            action: actionStrings,
             goto: gotoStrings
           })
         })
@@ -141,6 +202,10 @@ export default function LRParsingTable() {
         setTerminals(result.symbols.terminals)
         setNonterminals(result.symbols.nonterminals)
         setSummary(result.summary)
+        setReductions(result.lr1_table.reductions)
+        setConflicts(result.lr1_table.conflicts)
+        setProductionsTable(result.productions_table)
+        setClosureData(result.closure_table.states)
       } else {
         setError('Failed to load LR1 table data')
       }
@@ -164,12 +229,12 @@ export default function LRParsingTable() {
           <p className="text-sm text-gray-600">Action and Goto tables for LR(1) parsing</p>
           {summary && (
             <div className="flex gap-4 mt-2 text-xs text-gray-500">
-              <span>States: {summary.total_states}</span>
-              <span>Terminals: {summary.total_terminals}</span>
-              <span>Non-terminals: {summary.total_nonterminals}</span>
-              <span>Productions: {summary.total_productions}</span>
+              <span>States: {safeToString(summary.total_states)}</span>
+              <span>Terminals: {safeToString(summary.total_terminals)}</span>
+              <span>Non-terminals: {safeToString(summary.total_nonterminals)}</span>
+              <span>Productions: {safeToString(summary.total_productions)}</span>
               {summary.total_conflicts > 0 && (
-                <span className="text-red-600">Conflicts: {summary.total_conflicts}</span>
+                <span className="text-red-600">Conflicts: {safeToString(summary.total_conflicts)}</span>
               )}
             </div>
           )}
@@ -213,12 +278,12 @@ export default function LRParsingTable() {
                 <th className="p-3 font-semibold text-gray-900 bg-gray-100"></th>
                 {terminals.map((terminal) => (
                   <th key={terminal} className="p-3 text-center font-semibold text-gray-900 bg-blue-50">
-                    {terminal}
+                    {safeToString(terminal)}
                   </th>
                 ))}
                 {nonterminals.map((nonterminal) => (
                   <th key={nonterminal} className="p-3 text-center font-semibold text-gray-900 bg-green-50">
-                    {nonterminal}
+                    {safeToString(nonterminal)}
                   </th>
                 ))}
               </tr>
@@ -226,15 +291,15 @@ export default function LRParsingTable() {
             <tbody>
               {data.map((row) => (
                 <tr key={row.state} className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="p-3 text-center text-green-600 font-bold bg-green-50">{row.state}</td>
+                  <td className="p-3 text-center text-green-600 font-bold bg-green-50">{safeToString(row.state)}</td>
                   {terminals.map((terminal) => (
                     <td key={terminal} className="p-3 text-center text-gray-800">
-                      {row.action[terminal] || ""}
+                      {safeToString(row.action[terminal])}
                     </td>
                   ))}
                   {nonterminals.map((nonterminal) => (
                     <td key={nonterminal} className="p-3 text-center text-gray-800">
-                      {row.goto[nonterminal] || ""}
+                      {safeToString(row.goto[nonterminal])}
                     </td>
                   ))}
                 </tr>
@@ -249,6 +314,69 @@ export default function LRParsingTable() {
           <div className="text-gray-400 mb-2">📊</div>
           <div>No LR(1) table data available.</div>
           <div className="text-sm mt-1">Click Refresh to load data.</div>
+        </div>
+      )}
+
+      {/* Sección de Conflictos */}
+      {!loading && conflicts.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-md font-semibold text-red-600 mb-3">⚠️ Conflicts Detected</h3>
+          <div className="bg-red-50 border border-red-200 rounded p-4">
+            {conflicts.map((conflict, index) => (
+              <div key={index} className="text-sm text-red-700 mb-2">
+                <strong>State {safeToString(conflict.state)}:</strong> {safeToString(conflict.type)} conflict on symbol '{safeToString(conflict.symbol)}'
+                <div className="text-xs text-red-600 ml-4">
+                  Actions: {conflict.actions ? safeToString(conflict.actions.join(', ')) : ''}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Sección de Reducciones */}
+      {!loading && Object.keys(reductions).length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-md font-semibold text-gray-900 mb-3">🔄 Reductions</h3>
+          <div className="bg-gray-50 border border-gray-200 rounded p-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+              {Object.entries(reductions).map(([state, reduction]) => (
+                <div key={state} className="flex justify-between">
+                  <span className="font-mono">State {safeToString(state)}:</span>
+                  <span className="text-blue-600">Reduce by production {safeToString(reduction)}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sección de Tabla de Producciones */}
+      {!loading && productionsTable.length > 0 && (
+        <div className="mt-6">
+          <h3 className="text-md font-semibold text-gray-900 mb-3">📋 Productions Table</h3>
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse text-xs font-mono">
+              <thead>
+                <tr className="border-b-2 border-gray-300">
+                  <th className="p-3 font-semibold text-gray-900 bg-gray-100">#</th>
+                  <th className="p-3 font-semibold text-gray-900 bg-gray-100">Production</th>
+                  <th className="p-3 font-semibold text-gray-900 bg-gray-100">Left Side</th>
+                  <th className="p-3 font-semibold text-gray-900 bg-gray-100">Right Side</th>
+                </tr>
+              </thead>
+              <tbody>
+                {productionsTable.map((prod) => (
+                  <tr key={prod.number} className="border-b border-gray-200 hover:bg-gray-50">
+                    <td className="p-3 text-center text-blue-600 font-bold bg-blue-50">{safeToString(prod.number)}</td>
+                    <td className="p-3 text-gray-800">{safeToString(prod.production)}</td>
+                    <td className="p-3 text-center text-green-600 font-semibold">{safeToString(prod.left_side)}</td>
+                    <td className="p-3 text-center text-gray-800">{safeToString(prod.right_side)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </Card>
