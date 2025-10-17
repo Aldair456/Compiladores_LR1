@@ -15,17 +15,45 @@ interface ApiResponse {
   success: boolean
   operation: string
   grammar: {
-    productions: string[]
+    augmented: boolean
     start_symbol: string
+    original_start_symbol: string
+    epsilon: string
+    end_marker: string
+    accept_token: string
+    original_productions: string[]
+    expanded_productions: string[]
   }
-  augmented_productions: string[]
-  table_data: TableData[]
-  terminals: string[]
-  nonterminals: string[]
+  lr1_table: {
+    action_table: Record<string, Record<string, string>>
+    goto_table: Record<string, Record<string, number>>
+    reductions: Record<string, any>
+    conflicts: any[]
+  }
+  closure_table: {
+    states: Array<{
+      id: number
+      items: string[]
+      transitions: Record<string, number>
+    }>
+  }
+  productions_table: Array<{
+    number: number
+    production: string
+    left_side: string
+    right_side: string
+  }>
+  symbols: {
+    terminals: string[]
+    nonterminals: string[]
+  }
   summary: {
     total_states: number
     total_terminals: number
     total_nonterminals: number
+    total_productions: number
+    total_conflicts: number
+    conflict_types: string[]
   }
 }
 
@@ -37,114 +65,82 @@ export default function LRParsingTable() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [closureData, setClosureData] = useState<any[]>([])
+  const [summary, setSummary] = useState<any>(null)
 
   const fetchData = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      // Primero obtener la gramática
+      // Obtener la gramática del contexto
       const grammarData = getGrammarForAPI()
-
-      // Primero obtener FIRST table para el closure table
-      const firstResponse = await fetch('/api/first-table', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(grammarData)
-      })
-
-      const firstResult = await firstResponse.json()
-
-      if (!firstResult.success) {
-        throw new Error('Failed to get FIRST table data')
+      
+      // Preparar el request según el nuevo formato
+      const requestData = {
+        grammar: grammarData.grammar,
+        options: {
+          augment: true,
+          epsilon_symbol: "ε",
+          end_marker: "$",
+          accept_token: "acc"
+        }
       }
 
-      // Construir first_table object
-      const firstTable: Record<string, string[]> = {}
-      if (firstResult.table_data) {
-        firstResult.table_data.forEach((item: any) => {
-          firstTable[item.symbol] = item.first_set
-        })
-      }
-
-      // Ahora obtener closure data del closure table
-      const closureResponse = await fetch('/api/lr1-closure', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          grammar: grammarData.grammar,
-          first_table: firstTable,
-          operation: "lr1_closure_table"
-        })
-      })
-
-      const closureResult = await closureResponse.json()
-
-      if (!closureResult.success) {
-        throw new Error('Failed to get closure data')
-      }
-
-      // Normalizar closure_data al formato que funciona en Postman
-      const normalizeSpaces = (str: string) => str.replace(/\s+/g, ' ').trim()
-      const normalizeEpsilon = (str: string) => normalizeSpaces(str.replace(/ε/g, 'e'))
-      const grammarSet = new Set((grammarData.grammar.productions || []).map((p: string) => normalizeEpsilon(p)))
-      const simplifiedClosure = (closureResult.closure_table || []).map((s: any) => ({
-        state: s.state,
-        kernel_items: (s.kernel_items || [])
-          .map((it: any) => ({
-            ...it,
-            production: normalizeEpsilon(it.production),
-            item: normalizeEpsilon(it.item),
-          }))
-          .filter((it: any) => !it.production || grammarSet.has(it.production)),
-        closure_items: (s.closure_items || [])
-          .map((it: any) => ({
-            ...it,
-            production: normalizeEpsilon(it.production),
-            item: normalizeEpsilon(it.item),
-          }))
-          .filter((it: any) => !it.production || grammarSet.has(it.production)),
-        all_items: (s.all_items || []).map((t: string) => normalizeEpsilon(t)),
-      }))
-
-      console.log('🧹 closure_data normalizado y filtrado:', simplifiedClosure)
-
-      setClosureData(simplifiedClosure)
-
-      // Construir gramática cruda (sin expandir |) tal como la requiere el endpoint
-      const rawProductions: string[] = (grammarRules || []).map((r: any) => `${r.left} -> ${r.right}`)
-      const rawStart = (grammarRules || []).find((r: any) => r.left === "S'")?.left || (grammarRules?.[0]?.left ?? "S'")
-      const lr1Grammar = { productions: rawProductions, start_symbol: rawStart }
-
-      // Ahora obtener LR1 table con gramática cruda y closure_data simplificado
-      const lr1Data = {
-        grammar: lr1Grammar,
-        closure_data: simplifiedClosure,
-        operation: "lr1_table",
-      }
-
-      console.log('📤 Enviando datos al LR1 Table endpoint (normalizado y gramática cruda):', JSON.stringify(lr1Data, null, 2))
+      console.log('📤 Enviando datos al LR1 Table endpoint:', requestData)
+      console.log('📤 Body completo que se envía:', JSON.stringify(requestData, null, 2))
+      console.log('📤 Grammar data:', requestData.grammar)
+      console.log('📤 Options:', requestData.options)
 
       const response = await fetch('/api/lr1-table', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(lr1Data)
+        body: JSON.stringify(requestData)
       })
 
       const result: ApiResponse = await response.json()
 
       console.log('📥 Respuesta del LR1 Table endpoint:', result)
+      console.log('📥 Respuesta completa recibida:', JSON.stringify(result, null, 2))
+      console.log('📥 Status de la respuesta:', response.status)
+      console.log('📥 Success:', result.success)
+      console.log('📥 LR1 Table data:', result.lr1_table)
+      console.log('📥 Symbols:', result.symbols)
+      console.log('📥 Summary:', result.summary)
 
-      if (result.success && result.table_data) {
-        setData(result.table_data)
-        setTerminals(result.terminals)
-        setNonterminals(result.nonterminals)
+      if (result.success && result.lr1_table) {
+        // Convertir la respuesta al formato esperado por la tabla
+        const tableData: TableData[] = []
+        
+        // Procesar action_table y goto_table
+        const allStates = new Set([
+          ...Object.keys(result.lr1_table.action_table),
+          ...Object.keys(result.lr1_table.goto_table)
+        ])
+        
+        allStates.forEach(stateId => {
+          const state = parseInt(stateId)
+          const action = result.lr1_table.action_table[stateId] || {}
+          const goto = result.lr1_table.goto_table[stateId] || {}
+          
+          // Convertir goto numbers a strings para la tabla
+          const gotoStrings: Record<string, string> = {}
+          Object.entries(goto).forEach(([symbol, targetState]) => {
+            gotoStrings[symbol] = targetState.toString()
+          })
+          
+          tableData.push({
+            state,
+            action,
+            goto: gotoStrings
+          })
+        })
+        
+        setData(tableData)
+        setTerminals(result.symbols.terminals)
+        setNonterminals(result.symbols.nonterminals)
+        setSummary(result.summary)
       } else {
         setError('Failed to load LR1 table data')
       }
@@ -163,7 +159,21 @@ export default function LRParsingTable() {
   return (
     <Card className="p-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold text-gray-900">LR Table</h2>
+        <div>
+          <h2 className="text-lg font-semibold text-gray-900">LR(1) Parsing Table</h2>
+          <p className="text-sm text-gray-600">Action and Goto tables for LR(1) parsing</p>
+          {summary && (
+            <div className="flex gap-4 mt-2 text-xs text-gray-500">
+              <span>States: {summary.total_states}</span>
+              <span>Terminals: {summary.total_terminals}</span>
+              <span>Non-terminals: {summary.total_nonterminals}</span>
+              <span>Productions: {summary.total_productions}</span>
+              {summary.total_conflicts > 0 && (
+                <span className="text-red-600">Conflicts: {summary.total_conflicts}</span>
+              )}
+            </div>
+          )}
+        </div>
         <Button
           onClick={fetchData}
           disabled={loading}
@@ -181,7 +191,8 @@ export default function LRParsingTable() {
 
       {loading && (
         <div className="text-center py-4 text-gray-600">
-          Loading LR1 Parsing Table...
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-2"></div>
+          Loading LR(1) Parsing Table...
         </div>
       )}
 
@@ -234,8 +245,10 @@ export default function LRParsingTable() {
       )}
 
       {!loading && data.length === 0 && !error && (
-        <div className="text-center py-4 text-gray-500">
-          No LR1 table data available. Click Refresh to load data.
+        <div className="text-center py-8 text-gray-500">
+          <div className="text-gray-400 mb-2">📊</div>
+          <div>No LR(1) table data available.</div>
+          <div className="text-sm mt-1">Click Refresh to load data.</div>
         </div>
       )}
     </Card>

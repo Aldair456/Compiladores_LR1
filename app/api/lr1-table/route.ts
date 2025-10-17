@@ -6,14 +6,18 @@ export async function POST(request: NextRequest) {
     
     // Console.log para ver qué llega al servidor
     console.log('🔍 Datos recibidos en LR1 Table API route:', body)
+    console.log('🔍 Body completo recibido:', JSON.stringify(body, null, 2))
+    console.log('🔍 Grammar recibido:', body.grammar)
+    console.log('🔍 Closure table recibido:', body.closure_table)
+    console.log('🔍 Options recibido:', body.options)
     
     // Validar que el body tenga la estructura esperada
-    if (!body.grammar || !body.closure_data || !body.operation) {
-      console.log('❌ Error: Campos faltantes en el body')
+    if (!body.grammar) {
+      console.log('❌ Error: Campo grammar faltante en el body')
       return NextResponse.json(
         { 
           success: false, 
-          error: 'Missing required fields: grammar, closure_data, and operation' 
+          error: 'Missing required field: grammar' 
         },
         { status: 400 }
       )
@@ -22,35 +26,32 @@ export async function POST(request: NextRequest) {
     const apiUrl = 'https://9i7d8f10ih.execute-api.us-east-1.amazonaws.com/dev/lr1-table'
     
     console.log('🚀 Enviando a AWS Lambda:', apiUrl)
-    // Normalizar espacios en closure_data por seguridad
-    const normalizeSpaces = (str: string) => (typeof str === 'string' ? str.replace(/\s+/g, ' ').trim() : str)
-    const normalizedBody = {
-      ...body,
-      closure_data: Array.isArray(body.closure_data)
-        ? body.closure_data.map((s: any) => ({
-            state: s.state,
-            kernel_items: (s.kernel_items || []).map((it: any) => ({
-              ...it,
-              item: normalizeSpaces(it.item),
-              production: normalizeSpaces(it.production),
-            })),
-            closure_items: (s.closure_items || []).map((it: any) => ({
-              ...it,
-              item: normalizeSpaces(it.item),
-              production: normalizeSpaces(it.production),
-            })),
-            all_items: (s.all_items || []).map((t: any) => normalizeSpaces(t)),
-          }))
-        : body.closure_data,
+    
+    // Preparar el body según el nuevo formato
+    const requestBody = {
+      grammar: body.grammar,
+      closure_table: body.closure_table || undefined, // Opcional
+      options: body.options || { // Opcional con valores por defecto
+        augment: true,
+        epsilon_symbol: "ε",
+        end_marker: "$",
+        accept_token: "acc"
+      }
     }
-    console.log('📦 Body enviado a AWS (normalizado):', normalizedBody)
+    
+    console.log('📦 Body enviado a AWS:', JSON.stringify(requestBody, null, 2))
+    console.log('📦 Request completo a AWS Lambda:')
+    console.log('   - URL:', apiUrl)
+    console.log('   - Method: POST')
+    console.log('   - Headers: Content-Type: application/json')
+    console.log('   - Body:', JSON.stringify(requestBody, null, 2))
     
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(normalizedBody)
+      body: JSON.stringify(requestBody)
     })
 
     if (!response.ok) {
@@ -63,7 +64,7 @@ export async function POST(request: NextRequest) {
           upstreamStatus: response.status,
           upstreamStatusText: response.statusText,
           upstreamBody,
-          sentBody: normalizedBody,
+          sentBody: requestBody,
         },
         { status: response.status }
       )
@@ -72,6 +73,9 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     
     console.log('✅ Respuesta de AWS Lambda:', data)
+    console.log('✅ Respuesta completa de AWS:', JSON.stringify(data, null, 2))
+    console.log('✅ Status de AWS:', response.status)
+    console.log('✅ Success:', data.success)
     
     return NextResponse.json(data)
   } catch (error) {
@@ -93,45 +97,19 @@ export async function GET(request: NextRequest) {
     const defaultData = {
       grammar: {
         productions: [
-          "S' -> S",
-          "S -> C C",
-          "C -> c C",
-          "C -> d"
+          "S -> A B C",
+          "A -> a | ε",
+          "B -> b | ε", 
+          "C -> c"
         ],
-        start_symbol: "S'"
+        start_symbol: "S"
       },
-      closure_data: [
-        {
-          state: 0,
-          kernel_items: [
-            {
-              item: "S' -> •S, $",
-              production: "S' -> S",
-              dot_position: 0,
-              lookahead: "$",
-              type: "kernel"
-            }
-          ],
-          closure_items: [
-            {
-              item: "S -> •C C, $",
-              production: "S -> C C",
-              dot_position: 0,
-              lookahead: "$",
-              type: "closure"
-            }
-          ],
-          all_items: [
-            "S' -> •S, $",
-            "S -> •C C, $",
-            "C -> •c C, c",
-            "C -> •d, c",
-            "C -> •c C, d",
-            "C -> •d, d"
-          ]
-        }
-      ],
-      operation: "lr1_table"
+      options: {
+        augment: true,
+        epsilon_symbol: "ε",
+        end_marker: "$",
+        accept_token: "acc"
+      }
     }
 
     const apiUrl = 'https://9i7d8f10ih.execute-api.us-east-1.amazonaws.com/dev/lr1-table'
