@@ -170,3 +170,5 @@ def test_handler_completo():
 
 if __name__ == "__main__":
     test_handler_completo()
+
+
