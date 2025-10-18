@@ -641,33 +641,33 @@ class LR1:
             changed = False
             
             for item in list(closure_set):
-                symbol_after_dot = item.get_symbol_after_dot()
+                # Obtener todos los símbolos no terminales después del punto
+                item_left, item_right = item.production.split(' -> ')
+                item_right_symbols = item_right.split()
                 
-                if symbol_after_dot and symbol_after_dot in self.nonterminals:
-                    # Buscar producciones que empiecen con este símbolo
-                    for production in self.expanded_productions:
-                        left, right = production.split(' -> ')
-                        left = left.strip()
+                # Buscar todos los símbolos no terminales después del punto
+                for i in range(item.dot_position, len(item_right_symbols)):
+                    symbol = item_right_symbols[i]
+                    
+                    if symbol in self.nonterminals:
+                        # Calcular β (símbolos después de este símbolo no terminal)
+                        beta = item_right_symbols[i + 1:]
                         
-                        if left == symbol_after_dot:
-                            # Calcular FIRST(βa) donde β son los símbolos después del punto
-                            item_left, item_right = item.production.split(' -> ')
-                            item_right_symbols = item_right.split()
+                        # Calcular FIRST(βa)
+                        lookaheads = self.first_of_beta_a(beta, item.lookahead)
+                        
+                        # Buscar producciones que empiecen con este símbolo
+                        for production in self.expanded_productions:
+                            left, right = production.split(' -> ')
+                            left = left.strip()
                             
-                            # Símbolos después del punto (β)
-                            beta = []
-                            if item.dot_position + 1 < len(item_right_symbols):
-                                beta = item_right_symbols[item.dot_position + 1:]
-                            
-                            # Calcular FIRST(βa)
-                            lookaheads = self.first_of_beta_a(beta, item.lookahead)
-                            
-                            for lookahead in lookaheads:
-                                if lookahead != 'ε':  # No agregar ε como lookahead
-                                    new_item = LR1Item(production, 0, lookahead)
-                                    if new_item not in closure_set:
-                                        closure_set.add(new_item)
-                                        changed = True
+                            if left == symbol:
+                                for lookahead in lookaheads:
+                                    if lookahead != 'ε':  # No agregar ε como lookahead
+                                        new_item = LR1Item(production, 0, lookahead)
+                                        if new_item not in closure_set:
+                                            closure_set.add(new_item)
+                                            changed = True
         
         return closure_set
     

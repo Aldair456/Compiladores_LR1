@@ -136,7 +136,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5a056466-baa9",
-          "S3Key": "serverless/lr1-service/dev/1760586556826-2025-10-16T03:49:16.826Z/lr1-service.zip"
+          "S3Key": "serverless/lr1-service/dev/1760766073518-2025-10-18T05:41:13.518Z/lr1-service.zip"
         },
         "Handler": "src/handlers/handler.lambda_handler",
         "Runtime": "python3.9",
@@ -167,7 +167,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5a056466-baa9",
-          "S3Key": "serverless/lr1-service/dev/1760586556826-2025-10-16T03:49:16.826Z/lr1-service.zip"
+          "S3Key": "serverless/lr1-service/dev/1760766073518-2025-10-18T05:41:13.518Z/lr1-service.zip"
         },
         "Handler": "src/handlers/handler_lr1_closure.lambda_handler",
         "Runtime": "python3.9",
@@ -198,7 +198,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5a056466-baa9",
-          "S3Key": "serverless/lr1-service/dev/1760586556826-2025-10-16T03:49:16.826Z/lr1-service.zip"
+          "S3Key": "serverless/lr1-service/dev/1760766073518-2025-10-18T05:41:13.518Z/lr1-service.zip"
         },
         "Handler": "src/handlers/handler_table_LR1.lambda_handler",
         "Runtime": "python3.9",
@@ -229,7 +229,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5a056466-baa9",
-          "S3Key": "serverless/lr1-service/dev/1760586556826-2025-10-16T03:49:16.826Z/lr1-service.zip"
+          "S3Key": "serverless/lr1-service/dev/1760766073518-2025-10-18T05:41:13.518Z/lr1-service.zip"
         },
         "Handler": "src/handlers/handler_lr1_trace.lambda_handler",
         "Runtime": "python3.9",
@@ -260,7 +260,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5a056466-baa9",
-          "S3Key": "serverless/lr1-service/dev/1760586556826-2025-10-16T03:49:16.826Z/lr1-service.zip"
+          "S3Key": "serverless/lr1-service/dev/1760766073518-2025-10-18T05:41:13.518Z/lr1-service.zip"
         },
         "Handler": "src/handlers/handler_lr1_trace_pretty.lambda_handler",
         "Runtime": "python3.9",
@@ -291,7 +291,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5a056466-baa9",
-          "S3Key": "serverless/lr1-service/dev/1760586556826-2025-10-16T03:49:16.826Z/lr1-service.zip"
+          "S3Key": "serverless/lr1-service/dev/1760766073518-2025-10-18T05:41:13.518Z/lr1-service.zip"
         },
         "Handler": "src/handlers/handler_pipeline.lambda_handler",
         "Runtime": "python3.9",
@@ -322,7 +322,7 @@
       "Properties": {
         "Code": {
           "S3Bucket": "serverless-framework-deployments-us-east-1-5a056466-baa9",
-          "S3Key": "serverless/lr1-service/dev/1760586556826-2025-10-16T03:49:16.826Z/lr1-service.zip"
+          "S3Key": "serverless/lr1-service/dev/1760766073518-2025-10-18T05:41:13.518Z/lr1-service.zip"
         },
         "Handler": "src/handlers/handler_lr1_tree.lambda_handler",
         "Runtime": "python3.9",
@@ -348,80 +348,80 @@
         "Lr1DashtreeLogGroup"
       ]
     },
-    "FirstDashtableLambdaVersion75ME1SfnkGiuw1Q2s1glLpOO0p9qgKr7xaLSpbLx3w": {
+    "FirstDashtableLambdaVersion7RFFLzZBaNCjPY45CpgBThbFN8g3L7O6b0UUysZ6Sp8": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "FirstDashtableLambdaFunction"
         },
-        "CodeSha256": "RfIli9ustj79hZ+BPirjHHbYkq9FLigRYsaryTLHCYs=",
+        "CodeSha256": "eoEgB7h3IHs2jOdaylWa9SeXt3s/B/vS5YFlaBIHcUA=",
         "Description": "Calcula tabla FIRST para gramáticas"
       }
     },
-    "Lr1DashclosureLambdaVersionEE2F90h6tgRw7wzeaOamqesIGbA7onHOo43dS0g": {
+    "Lr1DashclosureLambdaVersionSC3AEVoLu7ZHpkQUe0YQgn0uFg9rpUtPDIRaKKUMjA": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "Lr1DashclosureLambdaFunction"
         },
-        "CodeSha256": "RfIli9ustj79hZ+BPirjHHbYkq9FLigRYsaryTLHCYs=",
+        "CodeSha256": "eoEgB7h3IHs2jOdaylWa9SeXt3s/B/vS5YFlaBIHcUA=",
         "Description": "Genera conjuntos de elementos LR(1) con cierres"
       }
     },
-    "Lr1DashtableLambdaVersionZUdI1eaJzNADdYKxZdls6cXLpMC4j3r0Iz9qjalk": {
+    "Lr1DashtableLambdaVersionY6jgzNJmfLIyHQcNPNzy62V71MucoyCd6RQ1XydqmIk": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "Lr1DashtableLambdaFunction"
         },
-        "CodeSha256": "RfIli9ustj79hZ+BPirjHHbYkq9FLigRYsaryTLHCYs=",
+        "CodeSha256": "eoEgB7h3IHs2jOdaylWa9SeXt3s/B/vS5YFlaBIHcUA=",
         "Description": "Genera tabla ACTION/GOTO para LR(1)"
       }
     },
-    "Lr1DashtraceLambdaVersiony7cLjHJkblbAuXkKPm2IbW8IhbGpFOvz8hXDx8wyQ0": {
+    "Lr1DashtraceLambdaVersionSZ7kfy1dobZqYVPOQwRdDD2mmIv8KOsRN17rQ4RdeA": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "Lr1DashtraceLambdaFunction"
         },
-        "CodeSha256": "RfIli9ustj79hZ+BPirjHHbYkq9FLigRYsaryTLHCYs=",
+        "CodeSha256": "eoEgB7h3IHs2jOdaylWa9SeXt3s/B/vS5YFlaBIHcUA=",
         "Description": "Simula parsing LR(1) y genera trace"
       }
     },
-    "Lr1DashtraceDashprettyLambdaVersionZhw0wajhvXYEx7pJX2BYRtjf12T9J6F9zwNOrG5U": {
+    "Lr1DashtraceDashprettyLambdaVersionl8ZVib8eSEuSCYDlLLPqoKPDyNZc1tkhJFgt6BUyo": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "Lr1DashtraceDashprettyLambdaFunction"
         },
-        "CodeSha256": "RfIli9ustj79hZ+BPirjHHbYkq9FLigRYsaryTLHCYs=",
+        "CodeSha256": "eoEgB7h3IHs2jOdaylWa9SeXt3s/B/vS5YFlaBIHcUA=",
         "Description": "Simula parsing LR(1) y devuelve salida \"bonita\""
       }
     },
-    "Lr1DashpipelineLambdaVersionORosw80RYBUvL4Uq0U2Uo8GRxtzxqI0MbYJyaeU": {
+    "Lr1DashpipelineLambdaVersionz95NOX8wlHtk8PvdwhAlwrA9Xj1GZIDkrefPsmVU3aY": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "Lr1DashpipelineLambdaFunction"
         },
-        "CodeSha256": "RfIli9ustj79hZ+BPirjHHbYkq9FLigRYsaryTLHCYs=",
+        "CodeSha256": "eoEgB7h3IHs2jOdaylWa9SeXt3s/B/vS5YFlaBIHcUA=",
         "Description": "Pipeline completo LR(1) desde gramática hasta trace"
       }
     },
-    "Lr1DashtreeLambdaVersionrbOZPmkrxYsUMfM1nLbyFBbiK052eWwExCN2k7Ib6o": {
+    "Lr1DashtreeLambdaVersionb8idfSynNunTBp8uleMYRvLzy75tv2Q3GswDiwR8": {
       "Type": "AWS::Lambda::Version",
       "DeletionPolicy": "Retain",
       "Properties": {
         "FunctionName": {
           "Ref": "Lr1DashtreeLambdaFunction"
         },
-        "CodeSha256": "RfIli9ustj79hZ+BPirjHHbYkq9FLigRYsaryTLHCYs=",
+        "CodeSha256": "eoEgB7h3IHs2jOdaylWa9SeXt3s/B/vS5YFlaBIHcUA=",
         "Description": "Construye árbol de derivación a partir de trace o tabla LR(1)"
       }
     },
@@ -1179,7 +1179,7 @@
         "Lr1DashtreeLambdaPermissionApiGateway"
       ]
     },
-    "ApiGatewayDeployment1760586544183": {
+    "ApiGatewayDeployment1760766055917": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
@@ -1474,7 +1474,7 @@
     "FirstDashtableLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "FirstDashtableLambdaVersion75ME1SfnkGiuw1Q2s1glLpOO0p9qgKr7xaLSpbLx3w"
+        "Ref": "FirstDashtableLambdaVersion7RFFLzZBaNCjPY45CpgBThbFN8g3L7O6b0UUysZ6Sp8"
       },
       "Export": {
         "Name": "sls-lr1-service-dev-FirstDashtableLambdaFunctionQualifiedArn"
@@ -1483,7 +1483,7 @@
     "Lr1DashclosureLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "Lr1DashclosureLambdaVersionEE2F90h6tgRw7wzeaOamqesIGbA7onHOo43dS0g"
+        "Ref": "Lr1DashclosureLambdaVersionSC3AEVoLu7ZHpkQUe0YQgn0uFg9rpUtPDIRaKKUMjA"
       },
       "Export": {
         "Name": "sls-lr1-service-dev-Lr1DashclosureLambdaFunctionQualifiedArn"
@@ -1492,7 +1492,7 @@
     "Lr1DashtableLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "Lr1DashtableLambdaVersionZUdI1eaJzNADdYKxZdls6cXLpMC4j3r0Iz9qjalk"
+        "Ref": "Lr1DashtableLambdaVersionY6jgzNJmfLIyHQcNPNzy62V71MucoyCd6RQ1XydqmIk"
       },
       "Export": {
         "Name": "sls-lr1-service-dev-Lr1DashtableLambdaFunctionQualifiedArn"
@@ -1501,7 +1501,7 @@
     "Lr1DashtraceLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "Lr1DashtraceLambdaVersiony7cLjHJkblbAuXkKPm2IbW8IhbGpFOvz8hXDx8wyQ0"
+        "Ref": "Lr1DashtraceLambdaVersionSZ7kfy1dobZqYVPOQwRdDD2mmIv8KOsRN17rQ4RdeA"
       },
       "Export": {
         "Name": "sls-lr1-service-dev-Lr1DashtraceLambdaFunctionQualifiedArn"
@@ -1510,7 +1510,7 @@
     "Lr1DashtraceDashprettyLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "Lr1DashtraceDashprettyLambdaVersionZhw0wajhvXYEx7pJX2BYRtjf12T9J6F9zwNOrG5U"
+        "Ref": "Lr1DashtraceDashprettyLambdaVersionl8ZVib8eSEuSCYDlLLPqoKPDyNZc1tkhJFgt6BUyo"
       },
       "Export": {
         "Name": "sls-lr1-service-dev-Lr1DashtraceDashprettyLambdaFunctionQualifiedArn"
@@ -1519,7 +1519,7 @@
     "Lr1DashpipelineLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "Lr1DashpipelineLambdaVersionORosw80RYBUvL4Uq0U2Uo8GRxtzxqI0MbYJyaeU"
+        "Ref": "Lr1DashpipelineLambdaVersionz95NOX8wlHtk8PvdwhAlwrA9Xj1GZIDkrefPsmVU3aY"
       },
       "Export": {
         "Name": "sls-lr1-service-dev-Lr1DashpipelineLambdaFunctionQualifiedArn"
@@ -1528,7 +1528,7 @@
     "Lr1DashtreeLambdaFunctionQualifiedArn": {
       "Description": "Current Lambda function version",
       "Value": {
-        "Ref": "Lr1DashtreeLambdaVersionrbOZPmkrxYsUMfM1nLbyFBbiK052eWwExCN2k7Ib6o"
+        "Ref": "Lr1DashtreeLambdaVersionb8idfSynNunTBp8uleMYRvLzy75tv2Q3GswDiwR8"
       },
       "Export": {
         "Name": "sls-lr1-service-dev-Lr1DashtreeLambdaFunctionQualifiedArn"
