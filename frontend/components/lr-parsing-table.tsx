@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useGrammar } from "@/contexts/grammar-context"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 
 interface TableData {
   state: number
@@ -85,6 +85,12 @@ export default function LRParsingTable() {
   const [productionsTable, setProductionsTable] = useState<any[]>([])
 
   const fetchData = useCallback(async () => {
+    // Prevenir múltiples llamadas simultáneas
+    if (loading) {
+      console.log('⏳ Ya hay una carga en progreso, saltando...')
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -222,11 +228,18 @@ export default function LRParsingTable() {
     } finally {
       setLoading(false)
     }
-  }, [getGrammarForAPI, setLr1TableData])
+  }, [getGrammarForAPI, setLr1TableData, loading])
 
+  // Usar useRef para evitar bucles infinitos
+  const hasLoaded = useRef(false)
+  
   useEffect(() => {
-    fetchData()
-  }, [fetchData])
+    // Solo cargar una vez al montar el componente
+    if (!hasLoaded.current && !loading && data.length === 0) {
+      hasLoaded.current = true
+      fetchData()
+    }
+  }, []) // Dependencias vacías para que solo se ejecute una vez
 
   return (
     <Card className="p-4">
@@ -247,7 +260,10 @@ export default function LRParsingTable() {
           )}
         </div>
         <Button
-          onClick={fetchData}
+          onClick={() => {
+            hasLoaded.current = false
+            fetchData()
+          }}
           disabled={loading}
           className="bg-blue-600 hover:bg-blue-700 text-white"
         >
