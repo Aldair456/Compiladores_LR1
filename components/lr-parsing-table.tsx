@@ -72,7 +72,7 @@ const safeToString = (value: any): string => {
 }
 
 export default function LRParsingTable() {
-  const { getGrammarForAPI, grammarRules } = useGrammar()
+  const { getGrammarForAPI, grammarRules, setLr1TableData } = useGrammar()
   const [data, setData] = useState<TableData[]>([])
   const [terminals, setTerminals] = useState<string[]>([])
   const [nonterminals, setNonterminals] = useState<string[]>([])
@@ -208,6 +208,10 @@ export default function LRParsingTable() {
         setConflicts(result.lr1_table.conflicts)
         setProductionsTable(result.productions_table)
         setClosureData(result.closure_table.states)
+        
+        // Guardar los datos del LR1 table en el contexto para compartir con TraceTable
+        setLr1TableData(result.lr1_table)
+        console.log('💾 LR1 Table data saved to context:', result.lr1_table)
       } else {
         setError('Failed to load LR1 table data')
       }

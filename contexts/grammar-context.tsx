@@ -30,6 +30,9 @@ interface GrammarContextType {
   }
   // Nueva función para agregar gramática compleja
   setComplexGrammar: (grammarString: string) => void
+  // LR1 Table data
+  lr1TableData: any
+  setLr1TableData: (data: any) => void
 }
 
 const GrammarContext = createContext<GrammarContextType | undefined>(undefined)
@@ -40,6 +43,7 @@ export function GrammarProvider({ children }: { children: ReactNode }) {
     { id: 1, left: "S", right: "C C | e | a | b | c | d" },
     { id: 2, left: "C", right: "c C | Dd" },
   ])
+  const [lr1TableData, setLr1TableData] = useState<any>(null)
 
   const addRule = (left: string, right: string) => {
     const newRule: GrammarRule = {
@@ -165,7 +169,9 @@ export function GrammarProvider({ children }: { children: ReactNode }) {
     deleteRule,
     getGrammarForAPI,
     getGrammarForLR1Closure,
-    setComplexGrammar
+    setComplexGrammar,
+    lr1TableData,
+    setLr1TableData
   }
 
   return (
