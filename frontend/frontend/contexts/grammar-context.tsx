@@ -20,19 +20,8 @@ interface GrammarContextType {
     }
     operation: string
   }
-  getGrammarForLR1Closure: () => {
-    start_symbol: string
-    productions: string[]
-    options: {
-      augment: boolean
-      expand_alternatives: boolean
-    }
-  }
   // Nueva función para agregar gramática compleja
   setComplexGrammar: (grammarString: string) => void
-  // LR1 Table data
-  lr1TableData: any
-  setLr1TableData: (data: any) => void
 }
 
 const GrammarContext = createContext<GrammarContextType | undefined>(undefined)
@@ -43,7 +32,6 @@ export function GrammarProvider({ children }: { children: ReactNode }) {
     { id: 1, left: "S", right: "C C | e | a | b | c | d" },
     { id: 2, left: "C", right: "c C | Dd" },
   ])
-  const [lr1TableData, setLr1TableData] = useState<any>(null)
 
   const addRule = (left: string, right: string) => {
     const newRule: GrammarRule = {
@@ -129,49 +117,13 @@ export function GrammarProvider({ children }: { children: ReactNode }) {
     }
   }
 
-  const getGrammarForLR1Closure = () => {
-    // Expandir gramáticas complejas con | en múltiples producciones
-    const expandedProductions: string[] = []
-    
-    grammarRules.forEach(rule => {
-      const rightSide = rule.right.trim()
-      
-      // Si contiene |, dividir en múltiples producciones
-      if (rightSide.includes('|')) {
-        const alternatives = rightSide.split('|').map(alt => alt.trim()).filter(alt => alt.length > 0)
-        alternatives.forEach(alternative => {
-          expandedProductions.push(`${rule.left} -> ${alternative}`)
-        })
-      } else {
-        // Si no contiene |, usar tal como está
-        expandedProductions.push(`${rule.left} -> ${rightSide}`)
-      }
-    })
-    
-    const startSymbol = grammarRules.find(rule => rule.left === "S'")?.left || grammarRules[0]?.left || "S'"
-    
-    console.log('🔍 Gramática expandida para LR1 Closure API:', expandedProductions)
-    
-    return {
-      start_symbol: startSymbol,
-      productions: expandedProductions,
-      options: {
-        augment: true,
-        expand_alternatives: true
-      }
-    }
-  }
-
   const value = {
     grammarRules,
     setGrammarRules,
     addRule,
     deleteRule,
     getGrammarForAPI,
-    getGrammarForLR1Closure,
-    setComplexGrammar,
-    lr1TableData,
-    setLr1TableData
+    setComplexGrammar
   }
 
   return (

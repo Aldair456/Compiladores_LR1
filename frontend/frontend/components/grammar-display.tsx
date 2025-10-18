@@ -17,6 +17,21 @@ C -> c C | Dd`)
     }
   }
 
+  const handleLoadExample1 = () => {
+    const example = `S' -> S
+S -> C C | e | a | b | c | d
+C -> c C | Dd`
+    setGrammarText(example)
+  }
+
+  const handleLoadExample2 = () => {
+    const example = `S' -> S
+S -> C C
+C -> c C
+C -> d
+d -> A`
+    setGrammarText(example)
+  }
 
   const handleClear = () => {
     setGrammarText("")
@@ -41,7 +56,7 @@ C -> c C | Dd`)
       </div>
 
       {/* Botones de acción */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         <Button 
           onClick={handleLoadGrammar} 
           className="bg-blue-600 hover:bg-blue-700 text-white"
@@ -49,9 +64,24 @@ C -> c C | Dd`)
           Load Grammar
         </Button>
         <Button 
+          onClick={handleLoadExample1} 
+          variant="outline"
+          size="sm"
+        >
+          Example 1 (with |)
+        </Button>
+        <Button 
+          onClick={handleLoadExample2} 
+          variant="outline"
+          size="sm"
+        >
+          Example 2 (separate rules)
+        </Button>
+        <Button 
           onClick={handleClear} 
           variant="outline"
-          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+          size="sm"
+          className="text-red-600 hover:text-red-700"
         >
           Clear
         </Button>

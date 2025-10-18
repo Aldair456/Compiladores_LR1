@@ -1,0 +1,109 @@
+service: lr1-service
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    PYTHON_ENV: ${self:provider.stage}
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+      Resource: "arn:aws:logs:*:*:*"
+
+functions:
+  # Servicio 1: FIRST Table
+  first-table:
+    handler: src/handlers/handler.lambda_handler
+    name: ${self:service}-${self:provider.stage}-first-table
+    description: Calcula tabla FIRST para gramáticas
+    events:
+      - http:
+          path: /first-table
+          method: post
+          cors: true
+    environment:
+      SERVICE_NAME: ${self:service}
+      STAGE: ${self:provider.stage}
+
+  # Servicio 2: LR(1) Closure Table
+  lr1-closure:
+    handler: src/handlers/handler_lr1_closure.lambda_handler
+    name: ${self:service}-${self:provider.stage}-lr1-closure
+    description: Genera conjuntos de elementos LR(1) con cierres
+    events:
+      - http:
+          path: /lr1-closure
+          method: post
+          cors: true
+    environment:
+      SERVICE_NAME: ${self:service}
+      STAGE: ${self:provider.stage}
+
+  # Servicio 3: LR(1) Table (ACTION/GOTO)
+  lr1-table:
+    handler: src/handlers/handler_table_LR1.lambda_handler
+    name: ${self:service}-${self:provider.stage}-lr1-table
+    description: Genera tabla ACTION/GOTO para LR(1)
+    events:
+      - http:
+          path: /lr1-table
+          method: post
+          cors: true
+    environment:
+      SERVICE_NAME: ${self:service}
+      STAGE: ${self:provider.stage}
+
+  # Servicio 4: LR(1) Trace
+  lr1-trace:
+    handler: src/handlers/handler_lr1_trace.lambda_handler
+    name: ${self:service}-${self:provider.stage}-lr1-trace
+    description: Simula parsing LR(1) y genera trace
+    events:
+      - http:
+          path: /lr1-trace
+          method: post
+          cors: true
+    environment:
+      SERVICE_NAME: ${self:service}
+      STAGE: ${self:provider.stage}
+
+  # Servicio 5: Pipeline completo (opcional)
+  lr1-pipeline:
+    handler: src/handlers/handler_pipeline.lambda_handler
+    name: ${self:service}-${self:provider.stage}-lr1-pipeline
+    description: Pipeline completo LR(1) desde gramática hasta trace
+    events:
+      - http:
+          path: /lr1-pipeline
+          method: post
+          cors: true
+    environment:
+      SERVICE_NAME: ${self:service}
+      STAGE: ${self:provider.stage}
+
+# plugins:
+#   - serverless-python-requirements
+
+# custom:
+#   pythonRequirements:
+#     dockerizePip: false
+#     slim: true
+#     strip: false
+
+package:
+  include:
+    - src/**
+  exclude:
+    - .git/**
+    - .env*
+    - README.md
+    - __pycache__/**
+    - "*.pyc"
+    - node_modules/**
+    - .pytest_cache/**
+    - "*.egg-info/**"

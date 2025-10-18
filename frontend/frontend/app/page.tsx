@@ -1,5 +1,5 @@
 import GrammarDisplay from "@/components/grammar-display"
-import GrammarClosureVisualizer from "@/components/grammar_canonico"
+import ClosureTable from "@/components/closure-table"
 import FirstTable from "@/components/first-table"
 import LRParsingTable from "@/components/lr-parsing-table"
 import TraceTable from "@/components/trace-table"
@@ -21,9 +21,9 @@ export default function LRParserPage() {
             <LRParsingTable />
           </div>
 
-          {/* Middle column - Autómata Canónico LR(1) */}
+          {/* Middle column - Closure Table */}
           <div className="lg:col-span-2">
-            <GrammarClosureVisualizer />
+            <ClosureTable />
           </div>
         </div>
 

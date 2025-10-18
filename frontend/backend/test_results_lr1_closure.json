@@ -1,0 +1,1204 @@
+[
+  {
+    "test_number": 1,
+    "test_name": "Prueba LR(1) Closure 1",
+    "grammar": {
+      "productions": [
+        "S' -> S",
+        "S -> C C | e | a | b | c | d",
+        "C -> c C | d"
+      ],
+      "start_symbol": "S'"
+    },
+    "operation": "lr1_closure_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T08:33:20.898903Z",
+    "result": {
+      "success": true,
+      "operation": "lr1_closure_table",
+      "grammar": {
+        "productions": [
+          "S' -> S",
+          "S -> C C | e | a | b | c | d",
+          "C -> c C | d"
+        ],
+        "start_symbol": "S'"
+      },
+      "closure_table": [
+        {
+          "state": 0,
+          "kernel_items": [
+            {
+              "item": "S' -> • S, $",
+              "production": "S' -> S",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • c C, d",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            },
+            {
+              "item": "S -> • b, $",
+              "production": "S -> b",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "S -> • a, $",
+              "production": "S -> a",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, c",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "S -> • d, $",
+              "production": "S -> d",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "S -> • C C, $",
+              "production": "S -> C C",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, c",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "S -> • e, $",
+              "production": "S -> e",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, d",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            },
+            {
+              "item": "S -> • c, $",
+              "production": "S -> c",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            }
+          ],
+          "total_items": 11,
+          "transitions": {
+            "b": {
+              "symbol": "b",
+              "item_count": 1,
+              "items": [
+                "S -> • b, $"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 3,
+              "items": [
+                "S -> • d, $",
+                "C -> • d, c",
+                "C -> • d, d"
+              ]
+            },
+            "S": {
+              "symbol": "S",
+              "item_count": 1,
+              "items": [
+                "S' -> • S, $"
+              ]
+            },
+            "a": {
+              "symbol": "a",
+              "item_count": 1,
+              "items": [
+                "S -> • a, $"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 3,
+              "items": [
+                "C -> • c C, d",
+                "C -> • c C, c",
+                "S -> • c, $"
+              ]
+            },
+            "e": {
+              "symbol": "e",
+              "item_count": 1,
+              "items": [
+                "S -> • e, $"
+              ]
+            },
+            "C": {
+              "symbol": "C",
+              "item_count": 1,
+              "items": [
+                "S -> • C C, $"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • c C, d",
+            "S -> • b, $",
+            "S -> • a, $",
+            "C -> • c C, c",
+            "S -> • d, $",
+            "S -> • C C, $",
+            "C -> • d, c",
+            "S' -> • S, $",
+            "S -> • e, $",
+            "C -> • d, d",
+            "S -> • c, $"
+          ]
+        },
+        {
+          "state": 1,
+          "kernel_items": [
+            {
+              "item": "S -> b •, $",
+              "production": "S -> b",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "S -> b •, $"
+          ]
+        },
+        {
+          "state": 2,
+          "kernel_items": [
+            {
+              "item": "C -> d •, d",
+              "production": "C -> d",
+              "dot_position": 1,
+              "lookahead": "d",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> d •, c",
+              "production": "C -> d",
+              "dot_position": 1,
+              "lookahead": "c",
+              "type": "kernel"
+            },
+            {
+              "item": "S -> d •, $",
+              "production": "S -> d",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 3,
+          "transitions": {},
+          "all_items": [
+            "C -> d •, d",
+            "C -> d •, c",
+            "S -> d •, $"
+          ]
+        },
+        {
+          "state": 3,
+          "kernel_items": [
+            {
+              "item": "S' -> S •, $",
+              "production": "S' -> S",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "S' -> S •, $"
+          ]
+        },
+        {
+          "state": 4,
+          "kernel_items": [
+            {
+              "item": "S -> a •, $",
+              "production": "S -> a",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "S -> a •, $"
+          ]
+        },
+        {
+          "state": 5,
+          "kernel_items": [
+            {
+              "item": "S -> c •, $",
+              "production": "S -> c",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> c • C, c",
+              "production": "C -> c C",
+              "dot_position": 1,
+              "lookahead": "c",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> c • C, d",
+              "production": "C -> c C",
+              "dot_position": 1,
+              "lookahead": "d",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • c C, d",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, c",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, c",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, d",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            }
+          ],
+          "total_items": 7,
+          "transitions": {
+            "C": {
+              "symbol": "C",
+              "item_count": 2,
+              "items": [
+                "C -> c • C, c",
+                "C -> c • C, d"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 2,
+              "items": [
+                "C -> • d, c",
+                "C -> • d, d"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 2,
+              "items": [
+                "C -> • c C, d",
+                "C -> • c C, c"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • c C, d",
+            "S -> c •, $",
+            "C -> c • C, c",
+            "C -> • d, c",
+            "C -> • c C, c",
+            "C -> c • C, d",
+            "C -> • d, d"
+          ]
+        },
+        {
+          "state": 6,
+          "kernel_items": [
+            {
+              "item": "S -> e •, $",
+              "production": "S -> e",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "S -> e •, $"
+          ]
+        },
+        {
+          "state": 7,
+          "kernel_items": [
+            {
+              "item": "S -> C • C, $",
+              "production": "S -> C C",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • d, $",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, $",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            }
+          ],
+          "total_items": 3,
+          "transitions": {
+            "C": {
+              "symbol": "C",
+              "item_count": 1,
+              "items": [
+                "S -> C • C, $"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 1,
+              "items": [
+                "C -> • d, $"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 1,
+              "items": [
+                "C -> • c C, $"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • d, $",
+            "C -> • c C, $",
+            "S -> C • C, $"
+          ]
+        },
+        {
+          "state": 8,
+          "kernel_items": [
+            {
+              "item": "C -> c C •, d",
+              "production": "C -> c C",
+              "dot_position": 2,
+              "lookahead": "d",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> c C •, c",
+              "production": "C -> c C",
+              "dot_position": 2,
+              "lookahead": "c",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 2,
+          "transitions": {},
+          "all_items": [
+            "C -> c C •, d",
+            "C -> c C •, c"
+          ]
+        },
+        {
+          "state": 9,
+          "kernel_items": [
+            {
+              "item": "C -> d •, c",
+              "production": "C -> d",
+              "dot_position": 1,
+              "lookahead": "c",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> d •, d",
+              "production": "C -> d",
+              "dot_position": 1,
+              "lookahead": "d",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 2,
+          "transitions": {},
+          "all_items": [
+            "C -> d •, c",
+            "C -> d •, d"
+          ]
+        },
+        {
+          "state": 10,
+          "kernel_items": [
+            {
+              "item": "C -> c • C, c",
+              "production": "C -> c C",
+              "dot_position": 1,
+              "lookahead": "c",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> c • C, d",
+              "production": "C -> c C",
+              "dot_position": 1,
+              "lookahead": "d",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • c C, d",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, c",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, c",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, d",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            }
+          ],
+          "total_items": 6,
+          "transitions": {
+            "C": {
+              "symbol": "C",
+              "item_count": 2,
+              "items": [
+                "C -> c • C, c",
+                "C -> c • C, d"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 2,
+              "items": [
+                "C -> • d, c",
+                "C -> • d, d"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 2,
+              "items": [
+                "C -> • c C, d",
+                "C -> • c C, c"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • c C, d",
+            "C -> c • C, c",
+            "C -> • d, c",
+            "C -> • c C, c",
+            "C -> c • C, d",
+            "C -> • d, d"
+          ]
+        },
+        {
+          "state": 11,
+          "kernel_items": [
+            {
+              "item": "S -> C C •, $",
+              "production": "S -> C C",
+              "dot_position": 2,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "S -> C C •, $"
+          ]
+        },
+        {
+          "state": 12,
+          "kernel_items": [
+            {
+              "item": "C -> d •, $",
+              "production": "C -> d",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "C -> d •, $"
+          ]
+        },
+        {
+          "state": 13,
+          "kernel_items": [
+            {
+              "item": "C -> c • C, $",
+              "production": "C -> c C",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • d, $",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, $",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            }
+          ],
+          "total_items": 3,
+          "transitions": {
+            "C": {
+              "symbol": "C",
+              "item_count": 1,
+              "items": [
+                "C -> c • C, $"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 1,
+              "items": [
+                "C -> • d, $"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 1,
+              "items": [
+                "C -> • c C, $"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • d, $",
+            "C -> • c C, $",
+            "C -> c • C, $"
+          ]
+        },
+        {
+          "state": 14,
+          "kernel_items": [
+            {
+              "item": "C -> c C •, $",
+              "production": "C -> c C",
+              "dot_position": 2,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "C -> c C •, $"
+          ]
+        }
+      ],
+      "terminals": [
+        "b",
+        "d",
+        "a",
+        "c",
+        "e"
+      ],
+      "nonterminals": [
+        "C",
+        "S'",
+        "S"
+      ],
+      "summary": {
+        "total_states": 15,
+        "total_terminals": 5,
+        "total_nonterminals": 3,
+        "total_items": 44
+      }
+    }
+  },
+  {
+    "test_number": 2,
+    "test_name": "Prueba LR(1) Closure 2",
+    "grammar": {
+      "productions": [
+        "S' -> S",
+        "S -> C C",
+        "C -> c C",
+        "C -> d"
+      ],
+      "start_symbol": "S'"
+    },
+    "operation": "lr1_closure_table",
+    "status_code": 200,
+    "success": true,
+    "timestamp": "2025-10-13T08:33:20.908602Z",
+    "result": {
+      "success": true,
+      "operation": "lr1_closure_table",
+      "grammar": {
+        "productions": [
+          "S' -> S",
+          "S -> C C",
+          "C -> c C",
+          "C -> d"
+        ],
+        "start_symbol": "S'"
+      },
+      "closure_table": [
+        {
+          "state": 0,
+          "kernel_items": [
+            {
+              "item": "S' -> • S, $",
+              "production": "S' -> S",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • c C, d",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            },
+            {
+              "item": "S -> • C C, $",
+              "production": "S -> C C",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, c",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, c",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, d",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            }
+          ],
+          "total_items": 6,
+          "transitions": {
+            "C": {
+              "symbol": "C",
+              "item_count": 1,
+              "items": [
+                "S -> • C C, $"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 2,
+              "items": [
+                "C -> • d, c",
+                "C -> • d, d"
+              ]
+            },
+            "S": {
+              "symbol": "S",
+              "item_count": 1,
+              "items": [
+                "S' -> • S, $"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 2,
+              "items": [
+                "C -> • c C, d",
+                "C -> • c C, c"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • c C, d",
+            "S -> • C C, $",
+            "C -> • d, c",
+            "S' -> • S, $",
+            "C -> • c C, c",
+            "C -> • d, d"
+          ]
+        },
+        {
+          "state": 1,
+          "kernel_items": [
+            {
+              "item": "S -> C • C, $",
+              "production": "S -> C C",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • d, $",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, $",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            }
+          ],
+          "total_items": 3,
+          "transitions": {
+            "C": {
+              "symbol": "C",
+              "item_count": 1,
+              "items": [
+                "S -> C • C, $"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 1,
+              "items": [
+                "C -> • d, $"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 1,
+              "items": [
+                "C -> • c C, $"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • d, $",
+            "C -> • c C, $",
+            "S -> C • C, $"
+          ]
+        },
+        {
+          "state": 2,
+          "kernel_items": [
+            {
+              "item": "C -> d •, c",
+              "production": "C -> d",
+              "dot_position": 1,
+              "lookahead": "c",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> d •, d",
+              "production": "C -> d",
+              "dot_position": 1,
+              "lookahead": "d",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 2,
+          "transitions": {},
+          "all_items": [
+            "C -> d •, c",
+            "C -> d •, d"
+          ]
+        },
+        {
+          "state": 3,
+          "kernel_items": [
+            {
+              "item": "S' -> S •, $",
+              "production": "S' -> S",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "S' -> S •, $"
+          ]
+        },
+        {
+          "state": 4,
+          "kernel_items": [
+            {
+              "item": "C -> c • C, c",
+              "production": "C -> c C",
+              "dot_position": 1,
+              "lookahead": "c",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> c • C, d",
+              "production": "C -> c C",
+              "dot_position": 1,
+              "lookahead": "d",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • c C, d",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, c",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, c",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "c",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • d, d",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "d",
+              "type": "closure"
+            }
+          ],
+          "total_items": 6,
+          "transitions": {
+            "C": {
+              "symbol": "C",
+              "item_count": 2,
+              "items": [
+                "C -> c • C, c",
+                "C -> c • C, d"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 2,
+              "items": [
+                "C -> • d, c",
+                "C -> • d, d"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 2,
+              "items": [
+                "C -> • c C, d",
+                "C -> • c C, c"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • c C, d",
+            "C -> c • C, c",
+            "C -> • d, c",
+            "C -> • c C, c",
+            "C -> c • C, d",
+            "C -> • d, d"
+          ]
+        },
+        {
+          "state": 5,
+          "kernel_items": [
+            {
+              "item": "S -> C C •, $",
+              "production": "S -> C C",
+              "dot_position": 2,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "S -> C C •, $"
+          ]
+        },
+        {
+          "state": 6,
+          "kernel_items": [
+            {
+              "item": "C -> d •, $",
+              "production": "C -> d",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "C -> d •, $"
+          ]
+        },
+        {
+          "state": 7,
+          "kernel_items": [
+            {
+              "item": "C -> c • C, $",
+              "production": "C -> c C",
+              "dot_position": 1,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [
+            {
+              "item": "C -> • d, $",
+              "production": "C -> d",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            },
+            {
+              "item": "C -> • c C, $",
+              "production": "C -> c C",
+              "dot_position": 0,
+              "lookahead": "$",
+              "type": "closure"
+            }
+          ],
+          "total_items": 3,
+          "transitions": {
+            "C": {
+              "symbol": "C",
+              "item_count": 1,
+              "items": [
+                "C -> c • C, $"
+              ]
+            },
+            "d": {
+              "symbol": "d",
+              "item_count": 1,
+              "items": [
+                "C -> • d, $"
+              ]
+            },
+            "c": {
+              "symbol": "c",
+              "item_count": 1,
+              "items": [
+                "C -> • c C, $"
+              ]
+            }
+          },
+          "all_items": [
+            "C -> • d, $",
+            "C -> • c C, $",
+            "C -> c • C, $"
+          ]
+        },
+        {
+          "state": 8,
+          "kernel_items": [
+            {
+              "item": "C -> c C •, d",
+              "production": "C -> c C",
+              "dot_position": 2,
+              "lookahead": "d",
+              "type": "kernel"
+            },
+            {
+              "item": "C -> c C •, c",
+              "production": "C -> c C",
+              "dot_position": 2,
+              "lookahead": "c",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 2,
+          "transitions": {},
+          "all_items": [
+            "C -> c C •, d",
+            "C -> c C •, c"
+          ]
+        },
+        {
+          "state": 9,
+          "kernel_items": [
+            {
+              "item": "C -> c C •, $",
+              "production": "C -> c C",
+              "dot_position": 2,
+              "lookahead": "$",
+              "type": "kernel"
+            }
+          ],
+          "closure_items": [],
+          "total_items": 1,
+          "transitions": {},
+          "all_items": [
+            "C -> c C •, $"
+          ]
+        }
+      ],
+      "terminals": [
+        "d",
+        "c"
+      ],
+      "nonterminals": [
+        "C",
+        "S'",
+        "S"
+      ],
+      "summary": {
+        "total_states": 10,
+        "total_terminals": 2,
+        "total_nonterminals": 3,
+        "total_items": 26
+      }
+    }
+  },
+  {
+    "test_number": 3,
+    "test_name": "Prueba LR(1) Closure 3",
+    "grammar": {
+      "productions": [
+        "S' -> S",
+        "S -> A B",
+        "A -> a",
+        "A -> ε",
+        "B -> b",
+        "B -> ε"
+      ],
+      "start_symbol": "S'"
+    },
+    "operation": "lr1_closure_table",
+    "status_code": 400,
+    "success": false,
+    "timestamp": "2025-10-13T08:33:20.909762Z",
+    "error": {
+      "error": "first_table is required for LR(1) closure"
+    }
+  },
+  {
+    "test_number": 4,
+    "test_name": "Prueba LR(1) Closure 4",
+    "grammar": {
+      "productions": [
+        "S' -> S",
+        "S -> a"
+      ],
+      "start_symbol": "S'"
+    },
+    "operation": "lr1_closure_table",
+    "status_code": 400,
+    "success": false,
+    "timestamp": "2025-10-13T08:33:20.916213Z",
+    "error": {
+      "error": "first_table is required for LR(1) closure"
+    }
+  }
+]
