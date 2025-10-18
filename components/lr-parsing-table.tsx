@@ -199,7 +199,9 @@ export default function LRParsingTable() {
         })
         
         setData(tableData)
-        setTerminals(result.symbols.terminals)
+        // Asegurar que el símbolo $ siempre esté incluido en los terminales
+        const terminalsWithEndMarker = [...new Set([...result.symbols.terminals, "$"])]
+        setTerminals(terminalsWithEndMarker)
         setNonterminals(result.symbols.nonterminals)
         setSummary(result.summary)
         setReductions(result.lr1_table.reductions)
