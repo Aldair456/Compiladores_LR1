@@ -324,14 +324,58 @@ export default function LRParsingTable() {
         <div className="mt-6">
           <h3 className="text-md font-semibold text-red-600 mb-3">⚠️ Conflicts Detected</h3>
           <div className="bg-red-50 border border-red-200 rounded p-4">
-            {conflicts.map((conflict, index) => (
-              <div key={index} className="text-sm text-red-700 mb-2">
-                <strong>State {safeToString(conflict.state)}:</strong> {safeToString(conflict.type)} conflict on symbol '{safeToString(conflict.symbol)}'
-                <div className="text-xs text-red-600 ml-4">
-                  Actions: {conflict.actions ? safeToString(conflict.actions.join(', ')) : ''}
+            <div className="space-y-3">
+              {conflicts.map((conflict, index) => (
+                <div key={index} className="bg-white border border-red-200 rounded p-3">
+                  <div className="font-semibold text-red-600 mb-2">
+                    State {safeToString(conflict.state)}
+                  </div>
+                  <div className="ml-4 space-y-2">
+                    <div className="text-sm">
+                      <span className="font-semibold text-gray-700">Conflict Type:</span> 
+                      <span className="ml-2 font-mono text-red-600">{safeToString(conflict.type)}</span>
+                    </div>
+                    <div className="text-sm">
+                      <span className="font-semibold text-gray-700">Symbol:</span> 
+                      <span className="ml-2 font-mono text-green-600">'{safeToString(conflict.symbol)}'</span>
+                    </div>
+                    {conflict.actions && conflict.actions.length > 0 && (
+                      <div className="text-sm">
+                        <span className="font-semibold text-gray-700">Conflicting Actions:</span>
+                        <div className="ml-2 mt-1">
+                          {conflict.actions.map((action, actionIndex) => (
+                            <span key={actionIndex} className="inline-block bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-mono mr-1 mb-1">
+                              {safeToString(action)}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {conflict.description && (
+                      <div className="text-sm">
+                        <span className="font-semibold text-gray-700">Description:</span> 
+                        <span className="ml-2 text-gray-600">{safeToString(conflict.description)}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sección cuando NO hay conflictos */}
+      {!loading && conflicts.length === 0 && (
+        <div className="mt-6">
+          <h3 className="text-md font-semibold text-green-600 mb-3">✅ No Conflicts Detected</h3>
+          <div className="bg-green-50 border border-green-200 rounded p-4">
+            <div className="text-sm text-green-700">
+              <div className="flex items-center">
+                <span className="text-green-500 mr-2">✓</span>
+                <span>The grammar is LR(1) and has no conflicts.</span>
               </div>
-            ))}
+            </div>
           </div>
         </div>
       )}
@@ -341,11 +385,32 @@ export default function LRParsingTable() {
         <div className="mt-6">
           <h3 className="text-md font-semibold text-gray-900 mb-3">🔄 Reductions</h3>
           <div className="bg-gray-50 border border-gray-200 rounded p-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-              {Object.entries(reductions).map(([state, reduction]) => (
-                <div key={state} className="flex justify-between">
-                  <span className="font-mono">State {safeToString(state)}:</span>
-                  <span className="text-blue-600">Reduce by production {safeToString(reduction)}</span>
+            <div className="space-y-3">
+              {Object.entries(reductions).map(([state, stateReductions]) => (
+                <div key={state} className="bg-white border border-gray-200 rounded p-3">
+                  <div className="font-semibold text-blue-600 mb-2">
+                    State {safeToString(state)}
+                  </div>
+                  {Object.entries(stateReductions).map(([symbol, reduction]) => (
+                    <div key={symbol} className="ml-4 mb-2 p-2 bg-blue-50 rounded">
+                      <div className="text-sm">
+                        <span className="font-semibold text-gray-700">Symbol:</span> 
+                        <span className="ml-2 font-mono text-green-600">'{safeToString(symbol)}'</span>
+                      </div>
+                      <div className="text-sm mt-1">
+                        <span className="font-semibold text-gray-700">Production:</span> 
+                        <span className="ml-2 font-mono text-blue-600">{safeToString(reduction.production)}</span>
+                      </div>
+                      <div className="text-sm mt-1">
+                        <span className="font-semibold text-gray-700">Production #:</span> 
+                        <span className="ml-2 font-mono text-purple-600">{safeToString(reduction.production_number)}</span>
+                      </div>
+                      <div className="text-sm mt-1">
+                        <span className="font-semibold text-gray-700">Item:</span> 
+                        <span className="ml-2 font-mono text-gray-600">{safeToString(reduction.item)}</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
