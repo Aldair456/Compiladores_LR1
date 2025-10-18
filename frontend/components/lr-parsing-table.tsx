@@ -3,7 +3,7 @@
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { useGrammar } from "@/contexts/grammar-context"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 
 interface TableData {
   state: number
@@ -84,7 +84,7 @@ export default function LRParsingTable() {
   const [conflicts, setConflicts] = useState<any[]>([])
   const [productionsTable, setProductionsTable] = useState<any[]>([])
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true)
       setError(null)
@@ -168,12 +168,12 @@ export default function LRParsingTable() {
         const tableData: TableData[] = []
         
         // Procesar action_table y goto_table
-        const allStates = new Set([
-          ...Object.keys(result.lr1_table.action_table),
-          ...Object.keys(result.lr1_table.goto_table)
-        ])
+        const actionStates = Object.keys(result.lr1_table.action_table)
+        const gotoStates = Object.keys(result.lr1_table.goto_table)
+        const allStates = [...actionStates, ...gotoStates]
+        const uniqueStates = allStates.filter((state, index) => allStates.indexOf(state) === index)
         
-        allStates.forEach(stateId => {
+        uniqueStates.forEach(stateId => {
           const state = parseInt(stateId)
           const actionRaw = result.lr1_table.action_table[stateId] || {}
           const gotoRaw = result.lr1_table.goto_table[stateId] || {}
@@ -200,7 +200,8 @@ export default function LRParsingTable() {
         
         setData(tableData)
         // Asegurar que el símbolo $ siempre esté incluido en los terminales
-        const terminalsWithEndMarker = [...new Set([...result.symbols.terminals, "$"])]
+        const allTerminals = [...result.symbols.terminals, "$"]
+        const terminalsWithEndMarker = allTerminals.filter((terminal, index) => allTerminals.indexOf(terminal) === index)
         setTerminals(terminalsWithEndMarker)
         setNonterminals(result.symbols.nonterminals)
         setSummary(result.summary)
@@ -221,11 +222,11 @@ export default function LRParsingTable() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [getGrammarForAPI, setLr1TableData])
 
   useEffect(() => {
     fetchData()
-  }, [])
+  }, [fetchData])
 
   return (
     <Card className="p-4">
@@ -341,13 +342,13 @@ export default function LRParsingTable() {
                     </div>
                     <div className="text-sm">
                       <span className="font-semibold text-gray-700">Symbol:</span> 
-                      <span className="ml-2 font-mono text-green-600">'{safeToString(conflict.symbol)}'</span>
+                      <span className="ml-2 font-mono text-green-600">&apos;{safeToString(conflict.symbol)}&apos;</span>
                     </div>
                     {conflict.actions && conflict.actions.length > 0 && (
                       <div className="text-sm">
                         <span className="font-semibold text-gray-700">Conflicting Actions:</span>
                         <div className="ml-2 mt-1">
-                          {conflict.actions.map((action, actionIndex) => (
+                          {conflict.actions.map((action: any, actionIndex: number) => (
                             <span key={actionIndex} className="inline-block bg-red-100 text-red-700 px-2 py-1 rounded text-xs font-mono mr-1 mb-1">
                               {safeToString(action)}
                             </span>
@@ -395,11 +396,11 @@ export default function LRParsingTable() {
                   <div className="font-semibold text-blue-600 mb-2">
                     State {safeToString(state)}
                   </div>
-                  {Object.entries(stateReductions).map(([symbol, reduction]) => (
+                  {Object.entries(stateReductions).map(([symbol, reduction]: [string, any]) => (
                     <div key={symbol} className="ml-4 mb-2 p-2 bg-blue-50 rounded">
                       <div className="text-sm">
                         <span className="font-semibold text-gray-700">Symbol:</span> 
-                        <span className="ml-2 font-mono text-green-600">'{safeToString(symbol)}'</span>
+                        <span className="ml-2 font-mono text-green-600">&apos;{safeToString(symbol)}&apos;</span>
                       </div>
                       <div className="text-sm mt-1">
                         <span className="font-semibold text-gray-700">Production:</span> 

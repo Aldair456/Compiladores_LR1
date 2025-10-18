@@ -29,6 +29,7 @@ interface TraceResponse {
     stack_depth: number
     tokens_processed: number
   }
+  error?: string
 }
 
 interface TreeNode {
