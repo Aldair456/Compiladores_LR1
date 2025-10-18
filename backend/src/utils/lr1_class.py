@@ -35,11 +35,13 @@ class LR1Item:
         Returns:
             str: Símbolo después del punto, o None si está al final
         """
+        
         if ' -> ' not in self.production:
             return None
         
         left, right = self.production.split(' -> ')
         right_symbols = right.split()
+        
         
         if self.dot_position >= len(right_symbols):
             return None
@@ -663,11 +665,15 @@ class LR1:
                             
                             if left == symbol:
                                 for lookahead in lookaheads:
-                                    if lookahead != 'ε':  # No agregar ε como lookahead
-                                        new_item = LR1Item(production, 0, lookahead)
-                                        if new_item not in closure_set:
-                                            closure_set.add(new_item)
-                                            changed = True
+                                    # Para producciones epsilon, agregar con dot al final
+                                    if right.strip() == 'ε':
+                                        new_item = LR1Item(production, 1, lookahead)  # Dot al final
+                                    else:
+                                        new_item = LR1Item(production, 0, lookahead)  # Dot al inicio
+                                    
+                                    if new_item not in closure_set:
+                                        closure_set.add(new_item)
+                                        changed = True
         
         return closure_set
     
