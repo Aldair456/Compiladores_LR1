@@ -21,7 +21,7 @@ export default function LRParserPage() {
             <LRParsingTable />
           </div>
 
-          {/* Middle column - LR(1) Canonical Automaton */}
+          {/* Middle column - Autómata Canónico LR(1) */}
           <div className="lg:col-span-2">
             <GrammarClosureVisualizer />
           </div>

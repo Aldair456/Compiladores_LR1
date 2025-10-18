@@ -160,27 +160,6 @@ export default function FirstTable() {
         </button>
       </div>
 
-      {/* Summary */}
-      <div className="mb-6 grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-blue-50 p-3 rounded-lg">
-          <div className="text-sm text-blue-600 font-medium">Terminals</div>
-          <div className="text-lg font-bold text-blue-800">{terminals.length}</div>
-          <div className="text-xs text-blue-600">{terminals.join(', ')}</div>
-        </div>
-        <div className="bg-green-50 p-3 rounded-lg">
-          <div className="text-sm text-green-600 font-medium">Nonterminals</div>
-          <div className="text-lg font-bold text-green-800">{nonterminals.length}</div>
-          <div className="text-xs text-green-600">{nonterminals.join(', ')}</div>
-        </div>
-        <div className="bg-purple-50 p-3 rounded-lg">
-          <div className="text-sm text-purple-600 font-medium">FIRST Sets</div>
-          <div className="text-lg font-bold text-purple-800">{firstData.length}</div>
-        </div>
-        <div className="bg-orange-50 p-3 rounded-lg">
-          <div className="text-sm text-orange-600 font-medium">FOLLOW Sets</div>
-          <div className="text-lg font-bold text-orange-800">{followData.length}</div>
-        </div>
-      </div>
 
       {/* FIRST Table */}
       <div className="mb-6">

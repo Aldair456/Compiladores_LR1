@@ -442,7 +442,7 @@ export default function GrammarClosureVisualizer() {
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">LR(1) Canonical Automaton</h2>
+            <h2 className="text-2xl font-semibold">Autómata Canónico LR(1)</h2>
             <p className="text-sm text-muted-foreground">Loading...</p>
           </div>
           <div className="flex gap-2">
@@ -467,7 +467,7 @@ export default function GrammarClosureVisualizer() {
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">LR(1) Canonical Automaton</h2>
+            <h2 className="text-2xl font-semibold">Autómata Canónico LR(1)</h2>
             <p className="text-sm text-muted-foreground">Error loading data</p>
           </div>
           <div className="flex gap-2">
@@ -492,7 +492,7 @@ export default function GrammarClosureVisualizer() {
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-semibold">LR(1) Canonical Automaton</h2>
+            <h2 className="text-2xl font-semibold">Autómata Canónico LR(1)</h2>
             <p className="text-sm text-muted-foreground">No data available</p>
           </div>
           <div className="flex gap-2">
@@ -516,10 +516,10 @@ export default function GrammarClosureVisualizer() {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-semibold">
-            LR(1) Canonical Automaton - {grammarData.grammar.original_start_symbol}
+            Autómata Canónico LR(1) - {grammarData.grammar.original_start_symbol}
           </h2>
           <p className="text-sm text-muted-foreground">
-            {states.length} states, {transitions.length} transitions • Click on nodes to see details
+            {states.length} estados, {transitions.length} transiciones • Haz clic en los nodos para ver detalles
           </p>
         </div>
         <div className="flex gap-2">

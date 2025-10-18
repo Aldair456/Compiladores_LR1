@@ -31,6 +31,16 @@ interface TraceResponse {
   }
 }
 
+interface TreeNode {
+  node: string
+  children?: TreeNode[]
+}
+
+interface TreeResponse {
+  node: string
+  children?: TreeNode[]
+}
+
 // Helper function to safely convert any value to string
 const safeToString = (value: any): string => {
   if (value === null || value === undefined) {
@@ -46,13 +56,15 @@ const safeToString = (value: any): string => {
 }
 
 export default function TraceTable() {
-  const { lr1TableData } = useGrammar()
+  const { lr1TableData, grammarRules } = useGrammar()
   const [inputString, setInputString] = useState("")
   const [traceData, setTraceData] = useState<TraceStep[]>([])
   const [summary, setSummary] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [accepted, setAccepted] = useState<boolean | null>(null)
+  const [derivationTree, setDerivationTree] = useState<TreeNode | null>(null)
+  const [treeLoading, setTreeLoading] = useState(false)
 
   // Función para hacer el trace
   const performTrace = async () => {
@@ -111,6 +123,14 @@ export default function TraceTable() {
         setTraceData(result.trace_steps)
         setSummary(result.summary)
         setAccepted(result.accepted)
+        
+        // Generar el árbol de derivación automáticamente si la cadena fue aceptada
+        if (result.accepted) {
+          console.log('🌳 Generating derivation tree for accepted string...')
+          await generateDerivationTree(result)
+        } else {
+          setDerivationTree(null)
+        }
       } else {
         // Mostrar más detalles del error
         const errorMessage = result.error || 'Failed to perform trace'
@@ -135,6 +155,90 @@ export default function TraceTable() {
   const formatInput = (inputString: string, position: number): string => {
     const tokens = inputString.split(' ')
     return tokens.slice(position).join(' ')
+  }
+
+  // Función para generar el árbol de derivación
+  const generateDerivationTree = async (traceResponse: TraceResponse) => {
+    try {
+      setTreeLoading(true)
+      
+      // Preparar las producciones de la gramática
+      const productions: string[] = []
+      grammarRules.forEach(rule => {
+        const rightSide = rule.right.trim()
+        if (rightSide.includes('|')) {
+          const alternatives = rightSide.split('|').map(alt => alt.trim()).filter(alt => alt.length > 0)
+          alternatives.forEach(alternative => {
+            productions.push(`${rule.left} -> ${alternative}`)
+          })
+        } else {
+          productions.push(`${rule.left} -> ${rightSide}`)
+        }
+      })
+
+      const treeRequestData = {
+        success: traceResponse.success,
+        accepted: traceResponse.accepted,
+        operation: traceResponse.operation,
+        input_string: traceResponse.input_string,
+        trace_steps: traceResponse.trace_steps,
+        summary: traceResponse.summary,
+        grammar: {
+          productions: productions
+        }
+      }
+
+      console.log('🌳 Sending tree request:', treeRequestData)
+      console.log('🌳 Tree request JSON:', JSON.stringify(treeRequestData, null, 2))
+
+      const response = await fetch('https://9i7d8f10ih.execute-api.us-east-1.amazonaws.com/dev/lr1-tree', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(treeRequestData)
+      })
+
+      const result: TreeResponse = await response.json()
+
+      console.log('🌳 Tree response:', result)
+
+      if (result) {
+        setDerivationTree(result)
+      } else {
+        console.error('❌ Tree generation failed')
+      }
+    } catch (err) {
+      console.error('❌ Error generating derivation tree:', err)
+    } finally {
+      setTreeLoading(false)
+    }
+  }
+
+  // Función para renderizar el árbol de derivación
+  const renderTreeNode = (node: TreeNode, level: number = 0): JSX.Element => {
+    const isTerminal = !node.children || node.children.length === 0
+    const nodeColor = isTerminal ? 'bg-orange-500' : 'bg-blue-600'
+    
+    return (
+      <div key={`${node.node}-${level}`} className="flex flex-col items-center">
+        <div className={`px-3 py-1 text-white rounded font-semibold ${nodeColor}`}>
+          {node.node}
+        </div>
+        {node.children && node.children.length > 0 && (
+          <>
+            <div className="h-4 w-px bg-gray-400"></div>
+            <div className="flex gap-4">
+              {node.children.map((child, index) => (
+                <div key={index} className="flex flex-col items-center">
+                  {renderTreeNode(child, level + 1)}
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -218,7 +322,7 @@ export default function TraceTable() {
 
       {/* Trace table */}
       {traceData.length > 0 && (
-        <div className="flex items-start justify-between">
+        <div className="flex items-start justify-between gap-6">
           <div className="flex-1">
             <h3 className="text-md font-semibold text-gray-900 mb-3">Trace Steps</h3>
             <div className="overflow-x-auto max-h-[400px] overflow-y-auto">
@@ -248,6 +352,39 @@ export default function TraceTable() {
                   ))}
                 </tbody>
               </table>
+            </div>
+          </div>
+          
+          {/* Árbol de derivación */}
+          <div className="w-80">
+            <h3 className="text-md font-semibold text-gray-900 mb-3">Derivation Tree</h3>
+            <div className="border border-gray-300 rounded-lg p-4 bg-gray-50 min-h-[200px]">
+              {treeLoading && (
+                <div className="flex items-center justify-center h-32">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <span className="ml-2 text-gray-600">Generating tree...</span>
+                </div>
+              )}
+              
+              {!treeLoading && derivationTree && (
+                <div className="font-mono text-sm">
+                  {renderTreeNode(derivationTree)}
+                </div>
+              )}
+              
+              {!treeLoading && !derivationTree && accepted === false && (
+                <div className="text-center text-gray-500 py-8">
+                  <div className="text-gray-400 mb-2">❌</div>
+                  <div>String was rejected - no tree available</div>
+                </div>
+              )}
+              
+              {!treeLoading && !derivationTree && accepted === null && (
+                <div className="text-center text-gray-500 py-8">
+                  <div className="text-gray-400 mb-2">🌳</div>
+                  <div>Tree will appear here after successful trace</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
