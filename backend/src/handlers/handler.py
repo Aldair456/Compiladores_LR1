@@ -1,9 +1,16 @@
-import json
 import os
 import logging
 from datetime import datetime
 from typing import Dict, Any
 from src.utils.lr1_class import LR1
+from src.utils.response_helpers import (
+    parse_request_body,
+    success_response,
+    error_response,
+    validation_error_response,
+    internal_error_response,
+    log_request_info
+)
 
 # Configurar logging
 logger = logging.getLogger()
@@ -12,25 +19,19 @@ logger.setLevel(logging.INFO)
 
 def lambda_handler(event, context):
     try:
-        # Parsear el body si viene como string
-        if isinstance(event.get('body'), str):
-            body = json.loads(event['body'])
-        else:
-            body = event
+        # Parsear el body
+        body = parse_request_body(event)
+        
+        # Log de información del request
+        log_request_info("first_table", body)
         
         # Verificar que sea operación de FIRST table
         if body.get('operation') != 'first_table':
-            return {
-                'statusCode': 400,
-                'body': json.dumps({'error': 'Operation must be first_table'})
-            }
+            return error_response('Operation must be first_table', status_code=400)
         
         # Verificar que solo tenga gramática (no debe tener first_table)
         if 'first_table' in body:
-            return {
-                'statusCode': 400,
-                'body': json.dumps({'error': 'FIRST handler only needs grammar, not first_table'})
-            }
+            return error_response('FIRST handler only needs grammar, not first_table', status_code=400)
         
         # Crear instancia LR1 con la gramática
         productions = body['grammar']['productions']
@@ -135,36 +136,12 @@ def lambda_handler(event, context):
         for nt, first_set in nonterminals_first.items():
             print(f"  FIRST({nt}) = {{{', '.join(sorted(first_set))}}}")
         
-        return {
-            'statusCode': 200,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps(result, indent=2)
-        }
+        return success_response(result)
         
+    except ValueError as e:
+        return error_response(str(e), status_code=400)
     except Exception as e:
-        logger.error(f"Error en lambda_handler: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        
-        # Asegurar que siempre devolvemos un JSON válido
-        error_response = {
-            "success": False,
-            "operation": "first_table",
-            "error": str(e),
-            "message": "Error interno del servidor"
-        }
-        
-        return {
-            'statusCode': 500,
-            'headers': {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            'body': json.dumps(error_response, indent=2)
-        }
+        return internal_error_response(e, "Error calculando tabla FIRST", include_traceback=True)
 
 
 

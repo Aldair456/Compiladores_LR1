@@ -1,7 +1,14 @@
-import json
 import logging
 from typing import Dict, Any, List, Set, Tuple, Optional
 from src.utils.lr1_class import LR1, LR1Item
+from src.utils.response_helpers import (
+    parse_request_body,
+    success_response,
+    error_response,
+    validation_error_response,
+    internal_error_response,
+    log_request_info
+)
 
 # Configurar logging
 logger = logging.getLogger()
@@ -20,20 +27,18 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         dict: Respuesta JSON con la Closure Table
     """
     try:
-        logger.info("Iniciando construcción de LR(1) Closure Table")
+        # Parsear el body
+        body = parse_request_body(event)
         
-        # Parsear el body si viene como string
-        if isinstance(event.get('body'), str):
-            body = json.loads(event['body'])
-        else:
-            body = event
+        # Log de información del request
+        log_request_info("lr1_closure", body)
         
         # Validar entrada
         if 'start_symbol' not in body:
-            return _error_response("start_symbol es obligatorio")
+            return validation_error_response("start_symbol es obligatorio", "start_symbol")
         
         if 'productions' not in body:
-            return _error_response("productions es obligatorio")
+            return validation_error_response("productions es obligatorio", "productions")
         
         # Obtener parámetros
         start_symbol = body['start_symbol']
@@ -83,40 +88,10 @@ def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
         logger.info("LR(1) Closure Table construida exitosamente")
         return response
         
+    except ValueError as e:
+        return error_response(str(e), status_code=400)
     except Exception as e:
-        logger.error(f"Error en lambda_handler: {str(e)}")
-        import traceback
-        traceback.print_exc()
-        return _error_response(f"Error interno: {str(e)}")
-
-
-def _error_response(message: str, details: Optional[Dict] = None) -> Dict[str, Any]:
-    """
-    Genera respuesta de error.
-    
-    Args:
-        message: Mensaje de error
-        details: Detalles adicionales opcionales
-    
-    Returns:
-        dict: Respuesta de error
-    """
-    response = {
-        "success": False,
-        "error": message
-    }
-    
-    if details:
-        response["details"] = details
-    
-    return {
-        'statusCode': 400,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        },
-        'body': json.dumps(response, indent=2)
-    }
+        return internal_error_response(e, "Error construyendo Closure Table", include_traceback=True)
 
 
 def _generar_respuesta_exitosa(
@@ -184,14 +159,7 @@ def _generar_respuesta_exitosa(
         }
     }
     
-    return {
-        'statusCode': 200,
-        'headers': {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        },
-        'body': json.dumps(response_data, indent=2)
-    }
+    return success_response(response_data)
 
 
 # Ejemplo de uso para pruebas
